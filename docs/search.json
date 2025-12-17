@@ -19,5 +19,19 @@
     "title": "scrnaseqcourse",
     "section": "Example Image",
     "text": "Example Image"
+  },
+  {
+    "objectID": "index.html#what-you-will-learn-on-this-course",
+    "href": "index.html#what-you-will-learn-on-this-course",
+    "title": "scrnaseqcourse",
+    "section": "What you will learn on this course:",
+    "text": "What you will learn on this course:\n\nBasic Unix commands\nWorking on HPC\nDownloading scrnaseq datasets and genome files.\nSetting up directory for the data processing and analysis.\nHow to run Nextflow pipeline on HPCs.\nHow to process 10x cellranger pipeline.\nHow to process and analyse scrnaseq count data in R.\nHow to visualise the analysed data and perform additional downstream analysis."
+  },
+  {
+    "objectID": "index.html#introduction-to-single-cell-rna-seq",
+    "href": "index.html#introduction-to-single-cell-rna-seq",
+    "title": "scrnaseqcourse",
+    "section": "Introduction to Single-Cell RNA-seq",
+    "text": "Introduction to Single-Cell RNA-seq\n\nRNA-seq allows profiling the transcripts in a sample in an efficient and cost-effective way.\nPart of its success is due to the fact that RNA-seq allows for an unbiased sampling of all transcripts in a sample, rather than being limited to a pre-determined set of transcripts (as in microarrays or RT-qPCR).\nTypically, RNA-seq has been used in samples composed of a mixture of cells, referred to as bulk RNA-seq, and has many applications.\nFor example, it can be used to characterise expression signatures between tissues in healthy/diseased, wild-type/mutant or control/treated samples.\nHowever, with bulk RNA-seq we can only estimate the average expression level for each gene across a population of cells, without regard for the heterogeneity in gene expression across individual cells of that sample."
   }
 ]

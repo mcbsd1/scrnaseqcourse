@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.26">
+<meta name="generator" content="quarto-1.7.32">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -67,15 +67,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <meta name="quarto:offset" content="./">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-5b4ad623e5705c0698d39aec6f10cf02.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-c1fac2584b48ed01fb6e278e36375074.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -150,6 +149,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
    
   <ul>
   <li><a href="#example-image" id="toc-example-image" class="nav-link active" data-scroll-target="#example-image">Example Image</a></li>
+  <li><a href="#day-1" id="toc-day-1" class="nav-link" data-scroll-target="#day-1">Day 1</a>
+  <ul class="collapse">
+  <li><a href="#what-you-will-learn-on-this-course" id="toc-what-you-will-learn-on-this-course" class="nav-link" data-scroll-target="#what-you-will-learn-on-this-course">What you will learn on this course:</a></li>
+  <li><a href="#introduction-to-single-cell-rna-seq" id="toc-introduction-to-single-cell-rna-seq" class="nav-link" data-scroll-target="#introduction-to-single-cell-rna-seq">Introduction to Single-Cell RNA-seq</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -178,7 +182,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>This is a Quarto website.</p>
 <p>To learn more about Quarto websites visit <a href="https://quarto.org/docs/websites" class="uri">https://quarto.org/docs/websites</a>.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span> <span class="sc">+</span> <span class="dv">1</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span> <span class="sc">+</span> <span class="dv">1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 2</code></pre>
 </div>
@@ -186,8 +190,45 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="example-image" class="level2">
 <h2 class="anchored" data-anchor-id="example-image">Example Image</h2>
 <p><img src="images/plot1.png" class="img-fluid" style="width:60.0%"></p>
+</section>
+<section id="day-1" class="level1">
+<h1>Day 1</h1>
+<p>We will cover:</p>
+<ul>
+<li>Introduction to the course.</li>
+<li>Basic Unix.</li>
+<li>Introduction to HAWK.</li>
+<li>Basic Unix Continued.</li>
+<li>Fetching the scrnaseq nextflow pipeline.</li>
+<li>Setting up the pipeline for execution.</li>
+<li>Running the pipeline.</li>
+</ul>
+<section id="what-you-will-learn-on-this-course" class="level2">
+<h2 class="anchored" data-anchor-id="what-you-will-learn-on-this-course">What you will learn on this course:</h2>
+<ul>
+<li>Basic Unix commands</li>
+<li>Working on HPC</li>
+<li>Downloading scrnaseq datasets and genome files.</li>
+<li>Setting up directory for the data processing and analysis.</li>
+<li>How to run Nextflow pipeline on HPCs.</li>
+<li>How to process 10x cellranger pipeline.</li>
+<li>How to process and analyse scrnaseq count data in R.</li>
+<li>How to visualise the analysed data and perform additional downstream analysis.</li>
+</ul>
+</section>
+<section id="introduction-to-single-cell-rna-seq" class="level2">
+<h2 class="anchored" data-anchor-id="introduction-to-single-cell-rna-seq">Introduction to Single-Cell RNA-seq</h2>
+<ul>
+<li>RNA-seq allows profiling the transcripts in a sample in an efficient and cost-effective way.</li>
+<li>Part of its success is due to the fact that RNA-seq allows for an unbiased sampling of all transcripts in a sample, rather than being limited to a pre-determined set of transcripts (as in microarrays or RT-qPCR).</li>
+<li>Typically, RNA-seq has been used in samples composed of a mixture of cells, referred to as <strong>bulk RNA-seq</strong>, and has many applications.</li>
+<li>For example, it can be used to characterise expression signatures between tissues in healthy/diseased, wild-type/mutant or control/treated samples.</li>
+<li>However, with bulk RNA-seq we can only estimate the <strong>average expression level</strong> for each gene across a population of cells, without regard for the heterogeneity in gene expression across individual cells of that sample.</li>
+</ul>
+<p><img src="images/singlecell-v.-bulk-image.jpg" class="img-fluid" style="width:60.0%"></p>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
@@ -242,14 +283,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-      const outerScaffold = trigger.parentElement.cloneNode(true);
-      const codeEl = outerScaffold.querySelector('code');
-      for (const childEl of codeEl.children) {
-        if (isCodeAnnotation(childEl)) {
-          childEl.remove();
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
         }
-      }
-      return codeEl.innerText;
+        return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

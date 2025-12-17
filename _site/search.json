@@ -1,5 +1,12 @@
 [
   {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About",
+    "section": "",
+    "text": "About this site\n\n1 + 1\n\n[1] 2"
+  },
+  {
     "objectID": "index.html",
     "href": "index.html",
     "title": "scrnaseqcourse",
@@ -11,13 +18,6 @@
     "href": "index.html#example-image",
     "title": "scrnaseqcourse",
     "section": "Example Image",
-    "text": "Example Image\n\n\n\n\nRNA-seq workflow"
-  },
-  {
-    "objectID": "about.html",
-    "href": "about.html",
-    "title": "About",
-    "section": "",
-    "text": "About this site\n\n1 + 1\n\n[1] 2"
+    "text": "Example Image"
   }
 ]

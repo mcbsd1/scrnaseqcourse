@@ -14,3 +14,36 @@ To learn more about Quarto websites visit <https://quarto.org/docs/websites>.
 
 ![](images/plot1.png){width=60%}
 
+# Day 1
+
+We will cover:
+
+- Introduction to the course.
+- Basic Unix.
+- Introduction to HAWK.
+- Basic Unix Continued.
+- Fetching the scrnaseq nextflow pipeline.
+- Setting up the pipeline for execution.
+- Running the pipeline.
+
+## What you will learn on this course:
+
+- Basic Unix commands
+- Working on HPC
+- Downloading scrnaseq datasets and genome files.
+- Setting up directory for the data processing and analysis.
+- How to run Nextflow pipeline on HPCs.
+- How to process 10x cellranger pipeline.
+- How to process and analyse scrnaseq count data in R. 
+- How to visualise the analysed data and perform additional downstream analysis.
+
+## Introduction to Single-Cell RNA-seq
+
+- RNA-seq allows profiling the transcripts in a sample in an efficient and cost-effective way.
+- Part of its success is due to the fact that RNA-seq allows for an unbiased sampling of all transcripts in a sample, rather than being limited to a pre-determined set of transcripts (as in microarrays or RT-qPCR).
+- Typically, RNA-seq has been used in samples composed of a mixture of cells, referred to as **bulk RNA-seq**, and has many applications.
+- For example, it can be used to characterise expression signatures between tissues in healthy/diseased, wild-type/mutant or control/treated samples.
+- However, with bulk RNA-seq we can only estimate the **average expression level** for each gene across a population of cells, without regard for the heterogeneity in gene expression across individual cells of that sample.
+
+![](images/singlecell-v.-bulk-image.jpg){width=60%}
+
