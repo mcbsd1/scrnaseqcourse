@@ -47,3 +47,61 @@ We will cover:
 
 ![](images/singlecell-v.-bulk-image.jpg){width=100%}
 
+- Unlike with the bulk approach, with scRNA-seq we can estimate a **distribution of expression levels** for each gene across a population of cells.
+
+- This allows us to answer new biological questions where **cell-specific changes in the transcriptome** are important. For example discovering new or rare cell types, identifying differential cell composition between healthy/diseased tissues or understanding cell differentiation during development.
+
+## Sample Preparation Protocols
+
+Broadly speaking, a typical scRNA-seq protocol consists of the following steps (illustrated in the figure below):
+
+- Tissue dissection and cell dissociating to obtain a suspension of cells.
+- Optionally cells may be selected 
+- Capture single cells into individual reaction containers (e.g. wells or oil droplets).
+- Extracting the RNA from each cell.
+- Reverse-transcribing the RNA to more stable cDNA.
+- Amplifying the cDNA (either by in vitro transcription or by PCR).
+- Preparing the sequencing library with adequate molecular adapters.
+- Sequencing, usually with paired-end Illumina protocols.
+- Processing the raw data to obtain a count matrix of genes-by-cells
+- Carrying several downstream analysis (the focus of this course).
+
+## Unix: Configuration
+
+### Unix: Hardware
+
+- **Hardware:** the physical components (the bits you can see when you take the back off a computer.
+- **CPU (central processing unit):** the computer chip performing the calculations.  
+- **Hard drive:** saved storage – your saved files.
+- **RAM (random access memory):** like the hard drive, it stores 
+information.  Access (reading this information) is faster than the hard drive, although information is only present whilst the compute is powered on, i.e. this is memory space.  
+
+![](images/unix-configuration.png){width=100%}
+### Unix: Kernel
+
+- The kernel sits between the command line and the hardware.  
+- When you type a command line to the screen and hit “enter,” the kernel executes the command, allocating the appropriate time and memory to the task.
+
+### Unix: Commands
+
+- the commands are the bread-and-butter functions common to all Linux installations and are part of the core (minimal) install.
+- they perform core processes such as file and job manipulations (read, write, delete files/jobs).
+
+### Unix: Programs
+
+- Other programs work identically to the core commands.
+- They are different because they generally perform specialised functions, for example, mapping next-generation sequence to a genome assembly.
+
+## Basic Unix: Graphical User Interface (GUI) & Command Line/Shell
+
+- All Windows/Mac/Linux PC's use a GUI to allow users to easily navigate and use the PC.
+- The GUI is common to Window/Mac/Linux.  
+- The interface permits you to access files and run commands/programs by clicking icon/apps, drag-and-drop.
+
+This is a shell. We can use this to type commands etc.
+
+![](images/gui.png){width=100%}
+
+In simple terms, the window on the computer into which you type a command, is called the shell
+
+![](images/gui1.png){width=100%}

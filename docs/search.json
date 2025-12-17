@@ -32,6 +32,27 @@
     "href": "index.html#introduction-to-single-cell-rna-seq",
     "title": "scrnaseqcourse",
     "section": "Introduction to Single-Cell RNA-seq",
-    "text": "Introduction to Single-Cell RNA-seq\n\nRNA-seq allows profiling the transcripts in a sample in an efficient and cost-effective way.\nPart of its success is due to the fact that RNA-seq allows for an unbiased sampling of all transcripts in a sample, rather than being limited to a pre-determined set of transcripts (as in microarrays or RT-qPCR).\nTypically, RNA-seq has been used in samples composed of a mixture of cells, referred to as bulk RNA-seq, and has many applications.\nFor example, it can be used to characterise expression signatures between tissues in healthy/diseased, wild-type/mutant or control/treated samples.\nHowever, with bulk RNA-seq we can only estimate the average expression level for each gene across a population of cells, without regard for the heterogeneity in gene expression across individual cells of that sample."
+    "text": "Introduction to Single-Cell RNA-seq\n\nRNA-seq allows profiling the transcripts in a sample in an efficient and cost-effective way.\nPart of its success is due to the fact that RNA-seq allows for an unbiased sampling of all transcripts in a sample, rather than being limited to a pre-determined set of transcripts (as in microarrays or RT-qPCR).\nTypically, RNA-seq has been used in samples composed of a mixture of cells, referred to as bulk RNA-seq, and has many applications.\nFor example, it can be used to characterise expression signatures between tissues in healthy/diseased, wild-type/mutant or control/treated samples.\nHowever, with bulk RNA-seq we can only estimate the average expression level for each gene across a population of cells, without regard for the heterogeneity in gene expression across individual cells of that sample.\n\n\n\nUnlike with the bulk approach, with scRNA-seq we can estimate a distribution of expression levels for each gene across a population of cells.\nThis allows us to answer new biological questions where cell-specific changes in the transcriptome are important. For example discovering new or rare cell types, identifying differential cell composition between healthy/diseased tissues or understanding cell differentiation during development."
+  },
+  {
+    "objectID": "index.html#sample-preparation-protocols",
+    "href": "index.html#sample-preparation-protocols",
+    "title": "scrnaseqcourse",
+    "section": "Sample Preparation Protocols",
+    "text": "Sample Preparation Protocols\nBroadly speaking, a typical scRNA-seq protocol consists of the following steps (illustrated in the figure below):\n\nTissue dissection and cell dissociating to obtain a suspension of cells.\nOptionally cells may be selected\nCapture single cells into individual reaction containers (e.g. wells or oil droplets).\nExtracting the RNA from each cell.\nReverse-transcribing the RNA to more stable cDNA.\nAmplifying the cDNA (either by in vitro transcription or by PCR).\nPreparing the sequencing library with adequate molecular adapters.\nSequencing, usually with paired-end Illumina protocols.\nProcessing the raw data to obtain a count matrix of genes-by-cells\nCarrying several downstream analysis (the focus of this course)."
+  },
+  {
+    "objectID": "index.html#unix-configuration",
+    "href": "index.html#unix-configuration",
+    "title": "scrnaseqcourse",
+    "section": "Unix: Configuration",
+    "text": "Unix: Configuration\n\nUnix: Hardware\n\nHardware: the physical components (the bits you can see when you take the back off a computer.\nCPU (central processing unit): the computer chip performing the calculations.\n\nHard drive: saved storage – your saved files.\nRAM (random access memory): like the hard drive, it stores information. Access (reading this information) is faster than the hard drive, although information is only present whilst the compute is powered on, i.e. this is memory space.\n\n ### Unix: Kernel\n\nThe kernel sits between the command line and the hardware.\n\nWhen you type a command line to the screen and hit “enter,” the kernel executes the command, allocating the appropriate time and memory to the task.\n\n\n\nUnix: Commands\n\nthe commands are the bread-and-butter functions common to all Linux installations and are part of the core (minimal) install.\nthey perform core processes such as file and job manipulations (read, write, delete files/jobs).\n\n\n\nUnix: Programs\n\nOther programs work identically to the core commands.\nThey are different because they generally perform specialised functions, for example, mapping next-generation sequence to a genome assembly."
+  },
+  {
+    "objectID": "index.html#basic-unix-graphical-user-interface-gui-command-lineshell",
+    "href": "index.html#basic-unix-graphical-user-interface-gui-command-lineshell",
+    "title": "scrnaseqcourse",
+    "section": "Basic Unix: Graphical User Interface (GUI) & Command Line/Shell",
+    "text": "Basic Unix: Graphical User Interface (GUI) & Command Line/Shell\n\nAll Windows/Mac/Linux PC’s use a GUI to allow users to easily navigate and use the PC.\nThe GUI is common to Window/Mac/Linux.\n\nThe interface permits you to access files and run commands/programs by clicking icon/apps, drag-and-drop.\n\nThis is a shell. We can use this to type commands etc.\n\nIn simple terms, the window on the computer into which you type a command, is called the shell"
   }
 ]

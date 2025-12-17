@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.32">
+<meta name="generator" content="quarto-1.8.26">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -67,14 +67,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <meta name="quarto:offset" content="./">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-c1fac2584b48ed01fb6e278e36375074.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-5b4ad623e5705c0698d39aec6f10cf02.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -153,6 +154,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul class="collapse">
   <li><a href="#what-you-will-learn-on-this-course" id="toc-what-you-will-learn-on-this-course" class="nav-link" data-scroll-target="#what-you-will-learn-on-this-course">What you will learn on this course:</a></li>
   <li><a href="#introduction-to-single-cell-rna-seq" id="toc-introduction-to-single-cell-rna-seq" class="nav-link" data-scroll-target="#introduction-to-single-cell-rna-seq">Introduction to Single-Cell RNA-seq</a></li>
+  <li><a href="#sample-preparation-protocols" id="toc-sample-preparation-protocols" class="nav-link" data-scroll-target="#sample-preparation-protocols">Sample Preparation Protocols</a></li>
+  <li><a href="#unix-configuration" id="toc-unix-configuration" class="nav-link" data-scroll-target="#unix-configuration">Unix: Configuration</a>
+  <ul class="collapse">
+  <li><a href="#unix-hardware" id="toc-unix-hardware" class="nav-link" data-scroll-target="#unix-hardware">Unix: Hardware</a></li>
+  <li><a href="#unix-commands" id="toc-unix-commands" class="nav-link" data-scroll-target="#unix-commands">Unix: Commands</a></li>
+  <li><a href="#unix-programs" id="toc-unix-programs" class="nav-link" data-scroll-target="#unix-programs">Unix: Programs</a></li>
+  </ul></li>
+  <li><a href="#basic-unix-graphical-user-interface-gui-command-lineshell" id="toc-basic-unix-graphical-user-interface-gui-command-lineshell" class="nav-link" data-scroll-target="#basic-unix-graphical-user-interface-gui-command-lineshell">Basic Unix: Graphical User Interface (GUI) &amp; Command Line/Shell</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -182,7 +191,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>This is a Quarto website.</p>
 <p>To learn more about Quarto websites visit <a href="https://quarto.org/docs/websites" class="uri">https://quarto.org/docs/websites</a>.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span> <span class="sc">+</span> <span class="dv">1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span> <span class="sc">+</span> <span class="dv">1</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 2</code></pre>
 </div>
@@ -225,7 +234,73 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>For example, it can be used to characterise expression signatures between tissues in healthy/diseased, wild-type/mutant or control/treated samples.</li>
 <li>However, with bulk RNA-seq we can only estimate the <strong>average expression level</strong> for each gene across a population of cells, without regard for the heterogeneity in gene expression across individual cells of that sample.</li>
 </ul>
-<p><img src="images/singlecell-v.-bulk-image.jpg" class="img-fluid" style="width:60.0%"></p>
+<p><img src="images/singlecell-v.-bulk-image.jpg" class="img-fluid" style="width:100.0%"></p>
+<ul>
+<li><p>Unlike with the bulk approach, with scRNA-seq we can estimate a <strong>distribution of expression levels</strong> for each gene across a population of cells.</p></li>
+<li><p>This allows us to answer new biological questions where <strong>cell-specific changes in the transcriptome</strong> are important. For example discovering new or rare cell types, identifying differential cell composition between healthy/diseased tissues or understanding cell differentiation during development.</p></li>
+</ul>
+</section>
+<section id="sample-preparation-protocols" class="level2">
+<h2 class="anchored" data-anchor-id="sample-preparation-protocols">Sample Preparation Protocols</h2>
+<p>Broadly speaking, a typical scRNA-seq protocol consists of the following steps (illustrated in the figure below):</p>
+<ul>
+<li>Tissue dissection and cell dissociating to obtain a suspension of cells.</li>
+<li>Optionally cells may be selected</li>
+<li>Capture single cells into individual reaction containers (e.g.&nbsp;wells or oil droplets).</li>
+<li>Extracting the RNA from each cell.</li>
+<li>Reverse-transcribing the RNA to more stable cDNA.</li>
+<li>Amplifying the cDNA (either by in vitro transcription or by PCR).</li>
+<li>Preparing the sequencing library with adequate molecular adapters.</li>
+<li>Sequencing, usually with paired-end Illumina protocols.</li>
+<li>Processing the raw data to obtain a count matrix of genes-by-cells</li>
+<li>Carrying several downstream analysis (the focus of this course).</li>
+</ul>
+</section>
+<section id="unix-configuration" class="level2">
+<h2 class="anchored" data-anchor-id="unix-configuration">Unix: Configuration</h2>
+<section id="unix-hardware" class="level3">
+<h3 class="anchored" data-anchor-id="unix-hardware">Unix: Hardware</h3>
+<ul>
+<li><strong>Hardware:</strong> the physical components (the bits you can see when you take the back off a computer.</li>
+<li><strong>CPU (central processing unit):</strong> the computer chip performing the calculations.<br>
+</li>
+<li><strong>Hard drive:</strong> saved storage – your saved files.</li>
+<li><strong>RAM (random access memory):</strong> like the hard drive, it stores information. Access (reading this information) is faster than the hard drive, although information is only present whilst the compute is powered on, i.e.&nbsp;this is memory space.</li>
+</ul>
+<p><img src="images/unix-configuration.png" class="img-fluid" style="width:100.0%"> ### Unix: Kernel</p>
+<ul>
+<li>The kernel sits between the command line and the hardware.<br>
+</li>
+<li>When you type a command line to the screen and hit “enter,” the kernel executes the command, allocating the appropriate time and memory to the task.</li>
+</ul>
+</section>
+<section id="unix-commands" class="level3">
+<h3 class="anchored" data-anchor-id="unix-commands">Unix: Commands</h3>
+<ul>
+<li>the commands are the bread-and-butter functions common to all Linux installations and are part of the core (minimal) install.</li>
+<li>they perform core processes such as file and job manipulations (read, write, delete files/jobs).</li>
+</ul>
+</section>
+<section id="unix-programs" class="level3">
+<h3 class="anchored" data-anchor-id="unix-programs">Unix: Programs</h3>
+<ul>
+<li>Other programs work identically to the core commands.</li>
+<li>They are different because they generally perform specialised functions, for example, mapping next-generation sequence to a genome assembly.</li>
+</ul>
+</section>
+</section>
+<section id="basic-unix-graphical-user-interface-gui-command-lineshell" class="level2">
+<h2 class="anchored" data-anchor-id="basic-unix-graphical-user-interface-gui-command-lineshell">Basic Unix: Graphical User Interface (GUI) &amp; Command Line/Shell</h2>
+<ul>
+<li>All Windows/Mac/Linux PC’s use a GUI to allow users to easily navigate and use the PC.</li>
+<li>The GUI is common to Window/Mac/Linux.<br>
+</li>
+<li>The interface permits you to access files and run commands/programs by clicking icon/apps, drag-and-drop.</li>
+</ul>
+<p>This is a shell. We can use this to type commands etc.</p>
+<p><img src="images/gui.png" class="img-fluid" style="width:100.0%"></p>
+<p>In simple terms, the window on the computer into which you type a command, is called the shell</p>
+<p><img src="images/gui1.png" class="img-fluid" style="width:100.0%"></p>
 
 
 </section>
@@ -283,13 +358,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy
