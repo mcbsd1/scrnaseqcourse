@@ -45,5 +45,5 @@ We will cover:
 - For example, it can be used to characterise expression signatures between tissues in healthy/diseased, wild-type/mutant or control/treated samples.
 - However, with bulk RNA-seq we can only estimate the **average expression level** for each gene across a population of cells, without regard for the heterogeneity in gene expression across individual cells of that sample.
 
-![](images/singlecell-v.-bulk-image.jpg){width=60%}
+![](images/singlecell-v.-bulk-image.jpg){width=100%}
 
