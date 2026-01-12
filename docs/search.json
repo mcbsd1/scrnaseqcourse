@@ -14,13 +14,6 @@
     "text": "This is a Quarto website.\nTo learn more about Quarto websites visit https://quarto.org/docs/websites.\n1 + 1\n\n[1] 2"
   },
   {
-    "objectID": "index.html#example-image",
-    "href": "index.html#example-image",
-    "title": "scrnaseqcourse",
-    "section": "Example Image",
-    "text": "Example Image"
-  },
-  {
     "objectID": "index.html#what-you-will-learn-on-this-course",
     "href": "index.html#what-you-will-learn-on-this-course",
     "title": "scrnaseqcourse",
@@ -46,7 +39,7 @@
     "href": "index.html#unix-configuration",
     "title": "scrnaseqcourse",
     "section": "Unix: Configuration",
-    "text": "Unix: Configuration\n\nUnix: Hardware\n\nHardware: the physical components (the bits you can see when you take the back off a computer.\nCPU (central processing unit): the computer chip performing the calculations.\n\nHard drive: saved storage – your saved files.\nRAM (random access memory): like the hard drive, it stores information. Access (reading this information) is faster than the hard drive, although information is only present whilst the compute is powered on, i.e. this is memory space.\n\n ### Unix: Kernel\n\nThe kernel sits between the command line and the hardware.\n\nWhen you type a command line to the screen and hit “enter,” the kernel executes the command, allocating the appropriate time and memory to the task.\n\n\n\nUnix: Commands\n\nthe commands are the bread-and-butter functions common to all Linux installations and are part of the core (minimal) install.\nthey perform core processes such as file and job manipulations (read, write, delete files/jobs).\n\n\n\nUnix: Programs\n\nOther programs work identically to the core commands.\nThey are different because they generally perform specialised functions, for example, mapping next-generation sequence to a genome assembly."
+    "text": "Unix: Configuration\n\nUnix: Hardware\n\nHardware: the physical components (the bits you can see when you take the back off a computer.\nCPU (central processing unit): the computer chip performing the calculations.\n\nHard drive: saved storage – your saved files.\nRAM (random access memory): like the hard drive, it stores information. Access (reading this information) is faster than the hard drive, although information is only present whilst the compute is powered on, i.e. this is memory space.\n\n\n\n\nUnix: Kernel\n\nThe kernel sits between the command line and the hardware.\n\nWhen you type a command line to the screen and hit “enter,” the kernel executes the command, allocating the appropriate time and memory to the task.\n\n\n\nUnix: Commands\n\nthe commands are the bread-and-butter functions common to all Linux installations and are part of the core (minimal) install.\nthey perform core processes such as file and job manipulations (read, write, delete files/jobs).\n\n\n\nUnix: Programs\n\nOther programs work identically to the core commands.\nThey are different because they generally perform specialised functions, for example, mapping next-generation sequence to a genome assembly."
   },
   {
     "objectID": "index.html#basic-unix-graphical-user-interface-gui-command-lineshell",
