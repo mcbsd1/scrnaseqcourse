@@ -1,8 +1,16 @@
 ---
 title: "Day 2"
+execute:
+  echo: false
+format:
+  html:
+    code-fold: true
+    code-tools: true
+    code-block-bg: true
+    code-block-border-left: "#31BAE9"
 ---
 
-# Day 2 - Processing scRNAseq reads generated from Nextflow pipeline
+# Processing scRNAseq reads generated from Nextflow pipeline
 
 ## Recap from Day 1
 
@@ -17,7 +25,7 @@ title: "Day 2"
 - The output from the nextflow execution run is stored under `results/cellranger_count_1k_mouse_kidney_CNIK_3pv3`
 - Login to your Hawk account and access the folder:
 
-```{bash}
+```
 cd /scratch/c.123456/scrnaseq-course/scrnaseq/results
 
 cd cellranger_count_1k_mouse_kidney_CNIK_3pv3
@@ -65,5 +73,65 @@ cd cellranger_count_1k_mouse_kidney_CNIK_3pv3
 - Delete lines from 7 until 29 except first 5-6 lines.
 
 ![](images/rmarkdown-2.png){width=100%}
+
+#### Load libraries
+
+- Copy the line in your markdown document:
+
+```{r}
+#| echo: true
+#| code-overflow: wrap
+# load libraries
+library(Seurat)
+```
+
+- Press the green arrow key on line 7 which says **Run Current Chunk** to load the Seurat library.
+
+![](images/rmarkdown-1.png){width=100%}
+
+#### Setup the Seurat object
+
+- We start by reading in the data. The `Read10X()` function reads in the output of the cellranger pipeline from 10X, returning a unique molecular identified (UMI) count matrix.
+- The values in this matrix represent the number of molecules for each feature (i.e. gene; row) that are detected in each cell (column).
+
+```r
+# Load the 1k mouse kidney dataset
+dat2 <- Read10X(data.dir = "input/filtered_feature_bc_matrix/")
+```
+
+- We next use the count matrix to create a Seurat object. 
+
+```r
+# Initialize the Seurat object with the raw (non-normalized data).
+dat2Obj <- CreateSeuratObject(counts = dat2, project = "1KmouseKidney", min.cells = 3, min.features = 200)
+
+dat2Obj
+```
+
+#### QC and filtering cells for further analysis
+
+- Seurat allows you to easily explore QC metrics and filter cells based on any user-defined criteria.
+- These includes:
+  - The number of unique genes detected in each cell.
+    - Low-quality cells or empty droplets will often have very few genes
+    - Cell doublets or multiplets may exhibit an aberrantly high gene count
+  - The percentage of reads that map to the mitochondrial genome.
+    - Low-quality / dying cells often exhibit extensive mitochondrial contamination
+    - We calculate mitochondrial QC metrics with the `PercentageFeatureSet()` function
+    - We use the set of all genes starting with `MT-` or `mt-` as a set of mitochondrial genes
+
+```r
+# The [[ operator can add columns to object metadata.
+dat2Obj[["percent.mt"]] <- PercentageFeatureSet(dat2Obj, pattern = "^mt-")
+```
+
+- To visualize QC metrics, we use `VlnPlot()` function.
+
+```r
+# Visualize QC metrics as a violin plot
+VlnPlot(dat2Obj, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3)
+```
+
+![](images/Violin_plot_1k_data.png){width=100%}
 
 
