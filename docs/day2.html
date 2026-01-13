@@ -127,7 +127,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
     <a class="nav-link" href="./index.html"> 
-<span class="menu-text">Home</span></a>
+<span class="menu-text">Day 1</span></a>
   </li>  
   <li class="nav-item">
     <a class="nav-link active" href="./day2.html" aria-current="page"> 
@@ -337,6 +337,69 @@ Attaching package: 'SeuratObject'</code></pre>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Visualize QC metrics as a violin plot</span></span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">VlnPlot</span>(dat2Obj, <span class="at">features =</span> <span class="fu">c</span>(<span class="st">"nFeature_RNA"</span>, <span class="st">"nCount_RNA"</span>, <span class="st">"percent.mt"</span>), <span class="at">ncol =</span> <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p><img src="images/Violin_plot_1k_data.png" class="img-fluid" style="width:100.0%"></p>
+<p>Try using ^MT- as pattern. What do you get?</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>dat2Obj[[<span class="st">"percent.mt"</span>]] <span class="ot">&lt;-</span> <span class="fu">PercentageFeatureSet</span>(dat2Obj, <span class="at">pattern =</span> <span class="st">"^MT-"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>Next, you can plot a FeatureScatter plot for visualising feature-feature relationships.</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot FeatureScatter plot</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>plot1 <span class="ot">&lt;-</span> <span class="fu">FeatureScatter</span>(dat2Obj, <span class="at">feature1 =</span> <span class="st">"nCount_RNA"</span>, <span class="at">feature2 =</span> <span class="st">"percent.mt"</span>)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>plot2 <span class="ot">&lt;-</span> <span class="fu">FeatureScatter</span>(dat2Obj, <span class="at">feature1 =</span> <span class="st">"nCount_RNA"</span>, <span class="at">feature2 =</span> <span class="st">"nFeature_RNA"</span>)</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>plot1 <span class="sc">+</span> plot2</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><img src="images/FeatureScatter.png" class="img-fluid" style="width:100.0%"></p>
+<ul>
+<li>Now, we will filter cells that have unique feature counts over 9000 or less than 200</li>
+<li>We filter cells that have &gt;5% mitochondrial counts</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>dat2FilteredObj <span class="ot">&lt;-</span> <span class="fu">subset</span>(dat2Obj, <span class="at">subset =</span> nFeature_RNA <span class="sc">&gt;</span> <span class="dv">200</span> <span class="sc">&amp;</span> nFeature_RNA <span class="sc">&lt;</span> <span class="dv">9000</span> <span class="sc">&amp;</span>  percent.mt <span class="sc">&lt;</span> <span class="dv">5</span>)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>dat2FilteredObj</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="co"># An object of class Seurat </span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 18321 features across 1235 samples within 1 assay </span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Active assay: RNA (18321 features, 0 variable features)</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="co">#  1 layer present: counts</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Lets break it down: - <code>nFeature_RNA &gt; 200</code>: Keeps cells that have more than 200 detected genes (features). This removes low-quality cells or empty droplets. - <code>Feature_RNA &lt; 9000</code>: Removes cells with too many detected genes, which might indicate doublets (two cells captured in one droplet). - <code>percent.mt &lt; 5</code>: Filters out cells where mitochondrial gene percentage is greater than 5%. High mitochondrial content often indicates damaged or dying cells.</p>
+<ul>
+<li>With this command, the number of cells reduces to 1235.</li>
+</ul>
+</section>
+<section id="normalizing-the-data" class="level4">
+<h4 class="anchored" data-anchor-id="normalizing-the-data">Normalizing the data</h4>
+<ul>
+<li>After removing unwanted cells from the dataset, the next step is to normalize the data.</li>
+<li>By default, we employ a global-scaling normalization method <code>LogNormalize</code> that normalizes the feature expression measurements for each cell by the total expression, multiplies this by a scale factor (10,000 by default), and log-transforms the result.</li>
+<li>Normalized values are stored in <code>dat2NormalisedObj[["RNA"]]$data</code></li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>dat2NormalisedObj <span class="ot">&lt;-</span> <span class="fu">NormalizeData</span>(<span class="at">object =</span> dat2FilteredObj, <span class="at">normalization.method =</span> <span class="st">"LogNormalize"</span>, <span class="at">scale.factor =</span> <span class="dv">10000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>The use of <code>SCTransform</code> replaces the need to run <code>NormalizeData</code>, <code>FindVariableFeatures</code>, or <code>ScaleData</code>.</li>
+</ul>
+</section>
+<section id="identification-of-highly-variable-features-feature-selection" class="level4">
+<h4 class="anchored" data-anchor-id="identification-of-highly-variable-features-feature-selection">Identification of highly variable features (feature selection)</h4>
+<ul>
+<li>We next calculate a subset of features (genes) that exhibit high cell-to-cell variation in the dataset.</li>
+<li>These are the features those are highly expressed in some cells, and lowly expressed in others.</li>
+<li>It has been found <a href="https://www.nature.com/articles/nmeth.2645">Brennecke et al.&nbsp;Nat Methods.2013</a> that focusing on these genes in downstream analysis helps to highlight biological signal in single-cell datasets.</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>dat2Normalised2Obj <span class="ot">&lt;-</span> <span class="fu">FindVariableFeatures</span>(dat2NormalisedObj, <span class="at">selection.method =</span> <span class="st">"vst"</span>, <span class="at">nfeatures =</span> <span class="dv">2000</span>)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>top10 <span class="ot">&lt;-</span> <span class="fu">head</span>(<span class="fu">VariableFeatures</span>(dat2Normalised2Obj), <span class="dv">10</span>)</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>plot3 <span class="ot">&lt;-</span> <span class="fu">VariableFeaturePlot</span>(dat2Normalised2Obj)</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>plot4 <span class="ot">&lt;-</span> <span class="fu">LabelPoints</span>(<span class="at">plot =</span> plot3, <span class="at">points =</span> top10, <span class="at">repel =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="fu">CombinePlots</span>(<span class="at">plots =</span> <span class="fu">list</span>(plot3, plot4))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><img src="images/VariableGenesPlot.png" class="img-fluid" style="width:100.0%"></p>
+</section>
+<section id="scaling-the-data" class="level4">
+<h4 class="anchored" data-anchor-id="scaling-the-data">Scaling the data</h4>
+<ul>
+<li>The <code>ScaleData</code> function in Seurat is used to normalize and scale gene expression values across cells.</li>
+<li>Additionally, it can <strong>regress out unwanted sources of variation</strong>, such as sequencing depth (<code>nUMI</code>) or mitochondrial gene percentage (<code>percent.mito</code>), helping to remove technical artifacts.</li>
+<li>By default, only variable features are scaled.</li>
+<li>But if you observe, in out script, we have used <code>rownames(dat2Normalised2Obj)</code> which applies scaling to all genes which is stored in <code>all.genes</code> object.</li>
+<li>This is then applied to <code>ScaleData</code> function which uses <code>all.genes</code> as features for scaling.</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>all.genes <span class="ot">&lt;-</span> <span class="fu">rownames</span>(dat2Normalised2Obj)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>dat2ScaledObj <span class="ot">&lt;-</span> <span class="fu">ScaleData</span>(<span class="at">object =</span> dat2Normalised2Obj, <span class="at">features =</span> all.genes)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 
 
 <!-- -->
@@ -797,142 +860,217 @@ Attaching package: 'SeuratObject'</code></pre>
     }
   });
   </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Day 2"</span></span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="an">execute:</span></span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="co">  echo: false</span></span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span></span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="co">  html:</span></span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="co">    code-fold: true</span></span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="co">    code-tools: true</span></span>
-<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a><span class="co">    code-block-bg: true</span></span>
-<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="co">    code-block-border-left: "#31BAE9"</span></span>
-<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a><span class="fu"># Processing scRNAseq reads generated from Nextflow pipeline</span></span>
-<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a><span class="fu">## Recap from Day 1</span></span>
-<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Yesterday we covered:</span>
-<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>How to use Unix.</span>
-<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>How to get onto HAWK.</span>
-<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>How to fetch the Github repository and download the resources.</span>
-<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>How to execute the scrnaseq nextflow pipeline on Hawk.</span>
-<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a><span class="fu">## Outputs from the nextflow pipeline</span></span>
-<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The output from the nextflow execution run is stored under <span class="in">`results/cellranger_count_1k_mouse_kidney_CNIK_3pv3`</span></span>
-<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Login to your Hawk account and access the folder:</span>
-<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a><span class="in">cd /scratch/c.123456/scrnaseq-course/scrnaseq/results</span></span>
-<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a><span class="in">cd cellranger_count_1k_mouse_kidney_CNIK_3pv3</span></span>
-<span id="cb12-32"><a href="#cb12-32" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb12-33"><a href="#cb12-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-34"><a href="#cb12-34" aria-hidden="true" tabindex="-1"></a><span class="fu">## Downloading data for analysis in Seurat (for analysis on RStudio on local system)</span></span>
-<span id="cb12-35"><a href="#cb12-35" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-36"><a href="#cb12-36" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>You can skip this step if you are working on RStudio Server.</span>
-<span id="cb12-37"><a href="#cb12-37" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Once the counts are generated using nextflow pipeline, download the data onto your personal computer.</span>
-<span id="cb12-38"><a href="#cb12-38" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>For this, you will need to use Filezilla to copy the files from remote onto your local machine.</span>
-<span id="cb12-39"><a href="#cb12-39" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Follow the steps below:</span>
-<span id="cb12-40"><a href="#cb12-40" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-41"><a href="#cb12-41" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Type in the Host: hawklogin.cf.ac.uk</span>
-<span id="cb12-42"><a href="#cb12-42" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>Username: <span class="dt">&lt;</span><span class="kw">hawk</span><span class="ot"> username</span><span class="dt">&gt;</span></span>
-<span id="cb12-43"><a href="#cb12-43" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>Password: <span class="dt">&lt;</span><span class="kw">hawk</span><span class="ot"> password</span><span class="dt">&gt;</span></span>
-<span id="cb12-44"><a href="#cb12-44" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>Port: 22</span>
-<span id="cb12-45"><a href="#cb12-45" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-46"><a href="#cb12-46" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Click on <span class="in">`Quickconnect`</span></span>
-<span id="cb12-47"><a href="#cb12-47" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Navigate to the folder <span class="in">`scrnaseq-course/scrnaseq/results`</span></span>
-<span id="cb12-48"><a href="#cb12-48" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Create a folder on your local machine, called <span class="in">`scrnaseq-nextflow`</span>.</span>
-<span id="cb12-49"><a href="#cb12-49" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Create 4 folders within <span class="in">`scrnaseq-nextflow`</span> folder:</span>
-<span id="cb12-50"><a href="#cb12-50" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>bin</span>
-<span id="cb12-51"><a href="#cb12-51" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>input</span>
-<span id="cb12-52"><a href="#cb12-52" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>output</span>
-<span id="cb12-53"><a href="#cb12-53" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>resources</span>
-<span id="cb12-54"><a href="#cb12-54" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Now, Drag and Drop the files from the <span class="in">`results`</span> folder in the remote server to your <span class="in">`input`</span> folder within <span class="in">`scrnaseq-nextflow`</span> folder on your local machine.</span>
-<span id="cb12-55"><a href="#cb12-55" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Once the files are copied, these should be visible on your local machine under <span class="in">`input`</span> folder.</span>
-<span id="cb12-56"><a href="#cb12-56" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-57"><a href="#cb12-57" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/filezilla-login.png)</span>{width=100%}</span>
-<span id="cb12-58"><a href="#cb12-58" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-59"><a href="#cb12-59" aria-hidden="true" tabindex="-1"></a><span class="fu">## Processing scrnaseq data (1k_mouse_kidney_CNIK_3pv3) in Seurat </span></span>
-<span id="cb12-60"><a href="#cb12-60" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-61"><a href="#cb12-61" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Once the counts have been downloaded into the <span class="in">`input`</span> folder on your local machine, Start **RStudio** on Mac/Windows.</span>
-<span id="cb12-62"><a href="#cb12-62" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-63"><a href="#cb12-63" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/rstudio.png)</span>{width=100%}</span>
-<span id="cb12-64"><a href="#cb12-64" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-65"><a href="#cb12-65" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Click on <span class="in">`New File`</span> --&gt; <span class="in">`R Markdown...`</span></span>
-<span id="cb12-66"><a href="#cb12-66" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-67"><a href="#cb12-67" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/rstudio-newfile.png)</span>{width=100%}</span>
-<span id="cb12-68"><a href="#cb12-68" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-69"><a href="#cb12-69" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>This is will open an <span class="in">`Untiltled`</span> file on the top-left hand side.</span>
-<span id="cb12-70"><a href="#cb12-70" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-71"><a href="#cb12-71" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/rstudio-untilted-rmarkdown.png)</span>{width=100%}</span>
-<span id="cb12-72"><a href="#cb12-72" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-73"><a href="#cb12-73" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Delete lines from 7 until 29 except first 5-6 lines.</span>
-<span id="cb12-74"><a href="#cb12-74" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-75"><a href="#cb12-75" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/rmarkdown-2.png)</span>{width=100%}</span>
-<span id="cb12-76"><a href="#cb12-76" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-77"><a href="#cb12-77" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Load libraries</span></span>
-<span id="cb12-78"><a href="#cb12-78" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-79"><a href="#cb12-79" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Copy the line in your markdown document:</span>
-<span id="cb12-80"><a href="#cb12-80" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-83"><a href="#cb12-83" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb12-84"><a href="#cb12-84" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: true</span></span>
-<span id="cb12-85"><a href="#cb12-85" aria-hidden="true" tabindex="-1"></a><span class="co">#| code-overflow: wrap</span></span>
-<span id="cb12-86"><a href="#cb12-86" aria-hidden="true" tabindex="-1"></a><span class="co"># load libraries</span></span>
-<span id="cb12-87"><a href="#cb12-87" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(Seurat)</span>
-<span id="cb12-88"><a href="#cb12-88" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb12-89"><a href="#cb12-89" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-90"><a href="#cb12-90" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Press the green arrow key on line 7 which says **Run Current Chunk** to load the Seurat library.</span>
-<span id="cb12-91"><a href="#cb12-91" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-92"><a href="#cb12-92" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/rmarkdown-1.png)</span>{width=100%}</span>
-<span id="cb12-93"><a href="#cb12-93" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-94"><a href="#cb12-94" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Setup the Seurat object</span></span>
-<span id="cb12-95"><a href="#cb12-95" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-96"><a href="#cb12-96" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>We start by reading in the data. The <span class="in">`Read10X()`</span> function reads in the output of the cellranger pipeline from 10X, returning a unique molecular identified (UMI) count matrix.</span>
-<span id="cb12-97"><a href="#cb12-97" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The values in this matrix represent the number of molecules for each feature (i.e. gene; row) that are detected in each cell (column).</span>
-<span id="cb12-98"><a href="#cb12-98" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-99"><a href="#cb12-99" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb12-100"><a href="#cb12-100" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the 1k mouse kidney dataset</span></span>
-<span id="cb12-101"><a href="#cb12-101" aria-hidden="true" tabindex="-1"></a>dat2 <span class="ot">&lt;-</span> <span class="fu">Read10X</span>(<span class="at">data.dir =</span> <span class="st">"input/filtered_feature_bc_matrix/"</span>)</span>
-<span id="cb12-102"><a href="#cb12-102" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb12-103"><a href="#cb12-103" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-104"><a href="#cb12-104" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>We next use the count matrix to create a Seurat object. </span>
-<span id="cb12-105"><a href="#cb12-105" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-106"><a href="#cb12-106" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb12-107"><a href="#cb12-107" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize the Seurat object with the raw (non-normalized data).</span></span>
-<span id="cb12-108"><a href="#cb12-108" aria-hidden="true" tabindex="-1"></a>dat2Obj <span class="ot">&lt;-</span> <span class="fu">CreateSeuratObject</span>(<span class="at">counts =</span> dat2, <span class="at">project =</span> <span class="st">"1KmouseKidney"</span>, <span class="at">min.cells =</span> <span class="dv">3</span>, <span class="at">min.features =</span> <span class="dv">200</span>)</span>
-<span id="cb12-109"><a href="#cb12-109" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-110"><a href="#cb12-110" aria-hidden="true" tabindex="-1"></a>dat2Obj</span>
-<span id="cb12-111"><a href="#cb12-111" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb12-112"><a href="#cb12-112" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-113"><a href="#cb12-113" aria-hidden="true" tabindex="-1"></a><span class="fu">#### QC and filtering cells for further analysis</span></span>
-<span id="cb12-114"><a href="#cb12-114" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-115"><a href="#cb12-115" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Seurat allows you to easily explore QC metrics and filter cells based on any user-defined criteria.</span>
-<span id="cb12-116"><a href="#cb12-116" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>These includes:</span>
-<span id="cb12-117"><a href="#cb12-117" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>The number of unique genes detected in each cell.</span>
-<span id="cb12-118"><a href="#cb12-118" aria-hidden="true" tabindex="-1"></a><span class="ss">    - </span>Low-quality cells or empty droplets will often have very few genes</span>
-<span id="cb12-119"><a href="#cb12-119" aria-hidden="true" tabindex="-1"></a><span class="ss">    - </span>Cell doublets or multiplets may exhibit an aberrantly high gene count</span>
-<span id="cb12-120"><a href="#cb12-120" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>The percentage of reads that map to the mitochondrial genome.</span>
-<span id="cb12-121"><a href="#cb12-121" aria-hidden="true" tabindex="-1"></a><span class="ss">    - </span>Low-quality / dying cells often exhibit extensive mitochondrial contamination</span>
-<span id="cb12-122"><a href="#cb12-122" aria-hidden="true" tabindex="-1"></a><span class="ss">    - </span>We calculate mitochondrial QC metrics with the <span class="in">`PercentageFeatureSet()`</span> function</span>
-<span id="cb12-123"><a href="#cb12-123" aria-hidden="true" tabindex="-1"></a><span class="ss">    - </span>We use the set of all genes starting with <span class="in">`MT-`</span> or <span class="in">`mt-`</span> as a set of mitochondrial genes</span>
-<span id="cb12-124"><a href="#cb12-124" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-125"><a href="#cb12-125" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb12-126"><a href="#cb12-126" aria-hidden="true" tabindex="-1"></a><span class="co"># The [[ operator can add columns to object metadata.</span></span>
-<span id="cb12-127"><a href="#cb12-127" aria-hidden="true" tabindex="-1"></a>dat2Obj[[<span class="st">"percent.mt"</span>]] <span class="ot">&lt;-</span> <span class="fu">PercentageFeatureSet</span>(dat2Obj, <span class="at">pattern =</span> <span class="st">"^mt-"</span>)</span>
-<span id="cb12-128"><a href="#cb12-128" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb12-129"><a href="#cb12-129" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-130"><a href="#cb12-130" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>To visualize QC metrics, we use <span class="in">`VlnPlot()`</span> function.</span>
-<span id="cb12-131"><a href="#cb12-131" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-132"><a href="#cb12-132" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb12-133"><a href="#cb12-133" aria-hidden="true" tabindex="-1"></a><span class="co"># Visualize QC metrics as a violin plot</span></span>
-<span id="cb12-134"><a href="#cb12-134" aria-hidden="true" tabindex="-1"></a><span class="fu">VlnPlot</span>(dat2Obj, <span class="at">features =</span> <span class="fu">c</span>(<span class="st">"nFeature_RNA"</span>, <span class="st">"nCount_RNA"</span>, <span class="st">"percent.mt"</span>), <span class="at">ncol =</span> <span class="dv">3</span>)</span>
-<span id="cb12-135"><a href="#cb12-135" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb12-136"><a href="#cb12-136" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-137"><a href="#cb12-137" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/Violin_plot_1k_data.png)</span>{width=100%}</span>
-<span id="cb12-138"><a href="#cb12-138" aria-hidden="true" tabindex="-1"></a></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Day 2"</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="co">  html:</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="co">    code-fold: true</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="co">    code-tools: true</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a><span class="co">    code-block-bg: true</span></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a><span class="co">    code-block-border-left: "#31BAE9"</span></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a><span class="fu"># Processing scRNAseq reads generated from Nextflow pipeline</span></span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a><span class="fu">## Recap from Day 1</span></span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Yesterday we covered:</span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>How to use Unix.</span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>How to get onto HAWK.</span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>How to fetch the Github repository and download the resources.</span>
+<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>How to execute the scrnaseq nextflow pipeline on Hawk.</span>
+<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a><span class="fu">## Outputs from the nextflow pipeline</span></span>
+<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The output from the nextflow execution run is stored under <span class="in">`results/cellranger_count_1k_mouse_kidney_CNIK_3pv3`</span></span>
+<span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Login to your Hawk account and access the folder:</span>
+<span id="cb18-25"><a href="#cb18-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-26"><a href="#cb18-26" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb18-27"><a href="#cb18-27" aria-hidden="true" tabindex="-1"></a><span class="in">cd /scratch/c.123456/scrnaseq-course/scrnaseq/results</span></span>
+<span id="cb18-28"><a href="#cb18-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-29"><a href="#cb18-29" aria-hidden="true" tabindex="-1"></a><span class="in">cd cellranger_count_1k_mouse_kidney_CNIK_3pv3</span></span>
+<span id="cb18-30"><a href="#cb18-30" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb18-31"><a href="#cb18-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-32"><a href="#cb18-32" aria-hidden="true" tabindex="-1"></a><span class="fu">## Downloading data for analysis in Seurat (for analysis on RStudio on local system)</span></span>
+<span id="cb18-33"><a href="#cb18-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-34"><a href="#cb18-34" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>You can skip this step if you are working on RStudio Server.</span>
+<span id="cb18-35"><a href="#cb18-35" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Once the counts are generated using nextflow pipeline, download the data onto your personal computer.</span>
+<span id="cb18-36"><a href="#cb18-36" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>For this, you will need to use Filezilla to copy the files from remote onto your local machine.</span>
+<span id="cb18-37"><a href="#cb18-37" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Follow the steps below:</span>
+<span id="cb18-38"><a href="#cb18-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-39"><a href="#cb18-39" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Type in the Host: hawklogin.cf.ac.uk</span>
+<span id="cb18-40"><a href="#cb18-40" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>Username: <span class="dt">&lt;</span><span class="kw">hawk</span><span class="ot"> username</span><span class="dt">&gt;</span></span>
+<span id="cb18-41"><a href="#cb18-41" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>Password: <span class="dt">&lt;</span><span class="kw">hawk</span><span class="ot"> password</span><span class="dt">&gt;</span></span>
+<span id="cb18-42"><a href="#cb18-42" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>Port: 22</span>
+<span id="cb18-43"><a href="#cb18-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-44"><a href="#cb18-44" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Click on <span class="in">`Quickconnect`</span></span>
+<span id="cb18-45"><a href="#cb18-45" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Navigate to the folder <span class="in">`scrnaseq-course/scrnaseq/results`</span></span>
+<span id="cb18-46"><a href="#cb18-46" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Create a folder on your local machine, called <span class="in">`scrnaseq-nextflow`</span>.</span>
+<span id="cb18-47"><a href="#cb18-47" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Create 4 folders within <span class="in">`scrnaseq-nextflow`</span> folder:</span>
+<span id="cb18-48"><a href="#cb18-48" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>bin</span>
+<span id="cb18-49"><a href="#cb18-49" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>input</span>
+<span id="cb18-50"><a href="#cb18-50" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>output</span>
+<span id="cb18-51"><a href="#cb18-51" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>resources</span>
+<span id="cb18-52"><a href="#cb18-52" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Now, Drag and Drop the files from the <span class="in">`results`</span> folder in the remote server to your <span class="in">`input`</span> folder within <span class="in">`scrnaseq-nextflow`</span> folder on your local machine.</span>
+<span id="cb18-53"><a href="#cb18-53" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Once the files are copied, these should be visible on your local machine under <span class="in">`input`</span> folder.</span>
+<span id="cb18-54"><a href="#cb18-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-55"><a href="#cb18-55" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/filezilla-login.png)</span>{width=100%}</span>
+<span id="cb18-56"><a href="#cb18-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-57"><a href="#cb18-57" aria-hidden="true" tabindex="-1"></a><span class="fu">## Processing scrnaseq data (1k_mouse_kidney_CNIK_3pv3) in Seurat </span></span>
+<span id="cb18-58"><a href="#cb18-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-59"><a href="#cb18-59" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Once the counts have been downloaded into the <span class="in">`input`</span> folder on your local machine, Start **RStudio** on Mac/Windows.</span>
+<span id="cb18-60"><a href="#cb18-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-61"><a href="#cb18-61" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/rstudio.png)</span>{width=100%}</span>
+<span id="cb18-62"><a href="#cb18-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-63"><a href="#cb18-63" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Click on <span class="in">`New File`</span> --&gt; <span class="in">`R Markdown...`</span></span>
+<span id="cb18-64"><a href="#cb18-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-65"><a href="#cb18-65" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/rstudio-newfile.png)</span>{width=100%}</span>
+<span id="cb18-66"><a href="#cb18-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-67"><a href="#cb18-67" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>This is will open an <span class="in">`Untiltled`</span> file on the top-left hand side.</span>
+<span id="cb18-68"><a href="#cb18-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-69"><a href="#cb18-69" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/rstudio-untilted-rmarkdown.png)</span>{width=100%}</span>
+<span id="cb18-70"><a href="#cb18-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-71"><a href="#cb18-71" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Delete lines from 7 until 29 except first 5-6 lines.</span>
+<span id="cb18-72"><a href="#cb18-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-73"><a href="#cb18-73" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/rmarkdown-2.png)</span>{width=100%}</span>
+<span id="cb18-74"><a href="#cb18-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-75"><a href="#cb18-75" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Load libraries</span></span>
+<span id="cb18-76"><a href="#cb18-76" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-77"><a href="#cb18-77" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Copy the line in your markdown document:</span>
+<span id="cb18-78"><a href="#cb18-78" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-81"><a href="#cb18-81" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb18-82"><a href="#cb18-82" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: true</span></span>
+<span id="cb18-83"><a href="#cb18-83" aria-hidden="true" tabindex="-1"></a><span class="co">#| code-overflow: wrap</span></span>
+<span id="cb18-84"><a href="#cb18-84" aria-hidden="true" tabindex="-1"></a><span class="co"># load libraries</span></span>
+<span id="cb18-85"><a href="#cb18-85" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(Seurat)</span>
+<span id="cb18-86"><a href="#cb18-86" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb18-87"><a href="#cb18-87" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-88"><a href="#cb18-88" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Press the green arrow key on line 7 which says **Run Current Chunk** to load the Seurat library.</span>
+<span id="cb18-89"><a href="#cb18-89" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-90"><a href="#cb18-90" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/rmarkdown-1.png)</span>{width=100%}</span>
+<span id="cb18-91"><a href="#cb18-91" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-92"><a href="#cb18-92" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Setup the Seurat object</span></span>
+<span id="cb18-93"><a href="#cb18-93" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-94"><a href="#cb18-94" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>We start by reading in the data. The <span class="in">`Read10X()`</span> function reads in the output of the cellranger pipeline from 10X, returning a unique molecular identified (UMI) count matrix.</span>
+<span id="cb18-95"><a href="#cb18-95" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The values in this matrix represent the number of molecules for each feature (i.e. gene; row) that are detected in each cell (column).</span>
+<span id="cb18-96"><a href="#cb18-96" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-97"><a href="#cb18-97" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb18-98"><a href="#cb18-98" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the 1k mouse kidney dataset</span></span>
+<span id="cb18-99"><a href="#cb18-99" aria-hidden="true" tabindex="-1"></a>dat2 <span class="ot">&lt;-</span> <span class="fu">Read10X</span>(<span class="at">data.dir =</span> <span class="st">"input/filtered_feature_bc_matrix/"</span>)</span>
+<span id="cb18-100"><a href="#cb18-100" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb18-101"><a href="#cb18-101" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-102"><a href="#cb18-102" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>We next use the count matrix to create a Seurat object. </span>
+<span id="cb18-103"><a href="#cb18-103" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-104"><a href="#cb18-104" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb18-105"><a href="#cb18-105" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize the Seurat object with the raw (non-normalized data).</span></span>
+<span id="cb18-106"><a href="#cb18-106" aria-hidden="true" tabindex="-1"></a>dat2Obj <span class="ot">&lt;-</span> <span class="fu">CreateSeuratObject</span>(<span class="at">counts =</span> dat2, <span class="at">project =</span> <span class="st">"1KmouseKidney"</span>, <span class="at">min.cells =</span> <span class="dv">3</span>, <span class="at">min.features =</span> <span class="dv">200</span>)</span>
+<span id="cb18-107"><a href="#cb18-107" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-108"><a href="#cb18-108" aria-hidden="true" tabindex="-1"></a>dat2Obj</span>
+<span id="cb18-109"><a href="#cb18-109" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb18-110"><a href="#cb18-110" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-111"><a href="#cb18-111" aria-hidden="true" tabindex="-1"></a><span class="fu">#### QC and filtering cells for further analysis</span></span>
+<span id="cb18-112"><a href="#cb18-112" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-113"><a href="#cb18-113" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Seurat allows you to easily explore QC metrics and filter cells based on any user-defined criteria.</span>
+<span id="cb18-114"><a href="#cb18-114" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>These includes:</span>
+<span id="cb18-115"><a href="#cb18-115" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>The number of unique genes detected in each cell.</span>
+<span id="cb18-116"><a href="#cb18-116" aria-hidden="true" tabindex="-1"></a><span class="ss">    - </span>Low-quality cells or empty droplets will often have very few genes</span>
+<span id="cb18-117"><a href="#cb18-117" aria-hidden="true" tabindex="-1"></a><span class="ss">    - </span>Cell doublets or multiplets may exhibit an aberrantly high gene count</span>
+<span id="cb18-118"><a href="#cb18-118" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>The percentage of reads that map to the mitochondrial genome.</span>
+<span id="cb18-119"><a href="#cb18-119" aria-hidden="true" tabindex="-1"></a><span class="ss">    - </span>Low-quality / dying cells often exhibit extensive mitochondrial contamination</span>
+<span id="cb18-120"><a href="#cb18-120" aria-hidden="true" tabindex="-1"></a><span class="ss">    - </span>We calculate mitochondrial QC metrics with the <span class="in">`PercentageFeatureSet()`</span> function</span>
+<span id="cb18-121"><a href="#cb18-121" aria-hidden="true" tabindex="-1"></a><span class="ss">    - </span>We use the set of all genes starting with <span class="in">`MT-`</span> or <span class="in">`mt-`</span> as a set of mitochondrial genes</span>
+<span id="cb18-122"><a href="#cb18-122" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-123"><a href="#cb18-123" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb18-124"><a href="#cb18-124" aria-hidden="true" tabindex="-1"></a><span class="co"># The [[ operator can add columns to object metadata.</span></span>
+<span id="cb18-125"><a href="#cb18-125" aria-hidden="true" tabindex="-1"></a>dat2Obj[[<span class="st">"percent.mt"</span>]] <span class="ot">&lt;-</span> <span class="fu">PercentageFeatureSet</span>(dat2Obj, <span class="at">pattern =</span> <span class="st">"^mt-"</span>)</span>
+<span id="cb18-126"><a href="#cb18-126" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb18-127"><a href="#cb18-127" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-128"><a href="#cb18-128" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>To visualize QC metrics, we use <span class="in">`VlnPlot()`</span> function.</span>
+<span id="cb18-129"><a href="#cb18-129" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-130"><a href="#cb18-130" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb18-131"><a href="#cb18-131" aria-hidden="true" tabindex="-1"></a><span class="co"># Visualize QC metrics as a violin plot</span></span>
+<span id="cb18-132"><a href="#cb18-132" aria-hidden="true" tabindex="-1"></a><span class="fu">VlnPlot</span>(dat2Obj, <span class="at">features =</span> <span class="fu">c</span>(<span class="st">"nFeature_RNA"</span>, <span class="st">"nCount_RNA"</span>, <span class="st">"percent.mt"</span>), <span class="at">ncol =</span> <span class="dv">3</span>)</span>
+<span id="cb18-133"><a href="#cb18-133" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb18-134"><a href="#cb18-134" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-135"><a href="#cb18-135" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/Violin_plot_1k_data.png)</span>{width=100%}</span>
+<span id="cb18-136"><a href="#cb18-136" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-137"><a href="#cb18-137" aria-hidden="true" tabindex="-1"></a>Try using ^MT- as pattern. What do you get?</span>
+<span id="cb18-138"><a href="#cb18-138" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-139"><a href="#cb18-139" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb18-140"><a href="#cb18-140" aria-hidden="true" tabindex="-1"></a>dat2Obj[[<span class="st">"percent.mt"</span>]] <span class="ot">&lt;-</span> <span class="fu">PercentageFeatureSet</span>(dat2Obj, <span class="at">pattern =</span> <span class="st">"^MT-"</span>)</span>
+<span id="cb18-141"><a href="#cb18-141" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb18-142"><a href="#cb18-142" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-143"><a href="#cb18-143" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Next, you can plot a FeatureScatter plot for visualising feature-feature relationships.</span>
+<span id="cb18-144"><a href="#cb18-144" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-145"><a href="#cb18-145" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb18-146"><a href="#cb18-146" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot FeatureScatter plot</span></span>
+<span id="cb18-147"><a href="#cb18-147" aria-hidden="true" tabindex="-1"></a>plot1 <span class="ot">&lt;-</span> <span class="fu">FeatureScatter</span>(dat2Obj, <span class="at">feature1 =</span> <span class="st">"nCount_RNA"</span>, <span class="at">feature2 =</span> <span class="st">"percent.mt"</span>)</span>
+<span id="cb18-148"><a href="#cb18-148" aria-hidden="true" tabindex="-1"></a>plot2 <span class="ot">&lt;-</span> <span class="fu">FeatureScatter</span>(dat2Obj, <span class="at">feature1 =</span> <span class="st">"nCount_RNA"</span>, <span class="at">feature2 =</span> <span class="st">"nFeature_RNA"</span>)</span>
+<span id="cb18-149"><a href="#cb18-149" aria-hidden="true" tabindex="-1"></a>plot1 <span class="sc">+</span> plot2</span>
+<span id="cb18-150"><a href="#cb18-150" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb18-151"><a href="#cb18-151" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-152"><a href="#cb18-152" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/FeatureScatter.png)</span>{width=100%}</span>
+<span id="cb18-153"><a href="#cb18-153" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-154"><a href="#cb18-154" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Now, we will filter cells that have unique feature counts over 9000 or less than 200</span>
+<span id="cb18-155"><a href="#cb18-155" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>We filter cells that have &gt;5% mitochondrial counts</span>
+<span id="cb18-156"><a href="#cb18-156" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-157"><a href="#cb18-157" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb18-158"><a href="#cb18-158" aria-hidden="true" tabindex="-1"></a>dat2FilteredObj <span class="ot">&lt;-</span> <span class="fu">subset</span>(dat2Obj, <span class="at">subset =</span> nFeature_RNA <span class="sc">&gt;</span> <span class="dv">200</span> <span class="sc">&amp;</span> nFeature_RNA <span class="sc">&lt;</span> <span class="dv">9000</span> <span class="sc">&amp;</span>  percent.mt <span class="sc">&lt;</span> <span class="dv">5</span>)</span>
+<span id="cb18-159"><a href="#cb18-159" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-160"><a href="#cb18-160" aria-hidden="true" tabindex="-1"></a>dat2FilteredObj</span>
+<span id="cb18-161"><a href="#cb18-161" aria-hidden="true" tabindex="-1"></a><span class="co"># An object of class Seurat </span></span>
+<span id="cb18-162"><a href="#cb18-162" aria-hidden="true" tabindex="-1"></a><span class="co"># 18321 features across 1235 samples within 1 assay </span></span>
+<span id="cb18-163"><a href="#cb18-163" aria-hidden="true" tabindex="-1"></a><span class="co"># Active assay: RNA (18321 features, 0 variable features)</span></span>
+<span id="cb18-164"><a href="#cb18-164" aria-hidden="true" tabindex="-1"></a><span class="co">#  1 layer present: counts</span></span>
+<span id="cb18-165"><a href="#cb18-165" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb18-166"><a href="#cb18-166" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-167"><a href="#cb18-167" aria-hidden="true" tabindex="-1"></a>Lets break it down:</span>
+<span id="cb18-168"><a href="#cb18-168" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`nFeature_RNA &gt; 200`</span>: Keeps cells that have more than 200 detected genes (features). This removes low-quality cells or empty droplets.</span>
+<span id="cb18-169"><a href="#cb18-169" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`Feature_RNA &lt; 9000`</span>: Removes cells with too many detected genes, which might indicate doublets (two cells captured in one droplet).</span>
+<span id="cb18-170"><a href="#cb18-170" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`percent.mt &lt; 5`</span>: Filters out cells where mitochondrial gene percentage is greater than 5%. High mitochondrial content often indicates damaged or dying cells.</span>
+<span id="cb18-171"><a href="#cb18-171" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-172"><a href="#cb18-172" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>With this command, the number of cells reduces to 1235.</span>
+<span id="cb18-173"><a href="#cb18-173" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-174"><a href="#cb18-174" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Normalizing the data</span></span>
+<span id="cb18-175"><a href="#cb18-175" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-176"><a href="#cb18-176" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>After removing unwanted cells from the dataset, the next step is to normalize the data.</span>
+<span id="cb18-177"><a href="#cb18-177" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>By default, we employ a global-scaling normalization method <span class="in">`LogNormalize`</span> that normalizes the feature expression measurements for each cell by the total expression, multiplies this by a scale factor (10,000 by default), and log-transforms the result.</span>
+<span id="cb18-178"><a href="#cb18-178" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Normalized values are stored in <span class="in">`dat2NormalisedObj[["RNA"]]$data`</span></span>
+<span id="cb18-179"><a href="#cb18-179" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-180"><a href="#cb18-180" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb18-181"><a href="#cb18-181" aria-hidden="true" tabindex="-1"></a>dat2NormalisedObj <span class="ot">&lt;-</span> <span class="fu">NormalizeData</span>(<span class="at">object =</span> dat2FilteredObj, <span class="at">normalization.method =</span> <span class="st">"LogNormalize"</span>, <span class="at">scale.factor =</span> <span class="dv">10000</span>)</span>
+<span id="cb18-182"><a href="#cb18-182" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb18-183"><a href="#cb18-183" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-184"><a href="#cb18-184" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The use of <span class="in">`SCTransform`</span> replaces the need to run <span class="in">`NormalizeData`</span>, <span class="in">`FindVariableFeatures`</span>, or <span class="in">`ScaleData`</span>.</span>
+<span id="cb18-185"><a href="#cb18-185" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-186"><a href="#cb18-186" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Identification of highly variable features (feature selection)</span></span>
+<span id="cb18-187"><a href="#cb18-187" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-188"><a href="#cb18-188" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>We next calculate a subset of features (genes) that exhibit high cell-to-cell variation in the dataset.</span>
+<span id="cb18-189"><a href="#cb18-189" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>These are the features those are highly expressed in some cells, and lowly expressed in others.</span>
+<span id="cb18-190"><a href="#cb18-190" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>It has been found <span class="co">[</span><span class="ot">Brennecke et al. Nat Methods.2013</span><span class="co">](https://www.nature.com/articles/nmeth.2645)</span> that focusing on these genes in downstream analysis helps to highlight biological signal in single-cell datasets.</span>
+<span id="cb18-191"><a href="#cb18-191" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-192"><a href="#cb18-192" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb18-193"><a href="#cb18-193" aria-hidden="true" tabindex="-1"></a>dat2Normalised2Obj <span class="ot">&lt;-</span> <span class="fu">FindVariableFeatures</span>(dat2NormalisedObj, <span class="at">selection.method =</span> <span class="st">"vst"</span>, <span class="at">nfeatures =</span> <span class="dv">2000</span>)</span>
+<span id="cb18-194"><a href="#cb18-194" aria-hidden="true" tabindex="-1"></a>top10 <span class="ot">&lt;-</span> <span class="fu">head</span>(<span class="fu">VariableFeatures</span>(dat2Normalised2Obj), <span class="dv">10</span>)</span>
+<span id="cb18-195"><a href="#cb18-195" aria-hidden="true" tabindex="-1"></a>plot3 <span class="ot">&lt;-</span> <span class="fu">VariableFeaturePlot</span>(dat2Normalised2Obj)</span>
+<span id="cb18-196"><a href="#cb18-196" aria-hidden="true" tabindex="-1"></a>plot4 <span class="ot">&lt;-</span> <span class="fu">LabelPoints</span>(<span class="at">plot =</span> plot3, <span class="at">points =</span> top10, <span class="at">repel =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb18-197"><a href="#cb18-197" aria-hidden="true" tabindex="-1"></a><span class="fu">CombinePlots</span>(<span class="at">plots =</span> <span class="fu">list</span>(plot3, plot4))</span>
+<span id="cb18-198"><a href="#cb18-198" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb18-199"><a href="#cb18-199" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-200"><a href="#cb18-200" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/VariableGenesPlot.png)</span>{width=100%}</span>
+<span id="cb18-201"><a href="#cb18-201" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-202"><a href="#cb18-202" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Scaling the data</span></span>
+<span id="cb18-203"><a href="#cb18-203" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-204"><a href="#cb18-204" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The <span class="in">`ScaleData`</span> function in Seurat is used to normalize and scale gene expression values across cells.</span>
+<span id="cb18-205"><a href="#cb18-205" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Additionally, it can **regress out unwanted sources of variation**, such as sequencing depth (<span class="in">`nUMI`</span>) or mitochondrial gene percentage (<span class="in">`percent.mito`</span>), helping to remove technical artifacts.</span>
+<span id="cb18-206"><a href="#cb18-206" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>By default, only variable features are scaled.</span>
+<span id="cb18-207"><a href="#cb18-207" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>But if you observe, in out script, we have used <span class="in">`rownames(dat2Normalised2Obj)`</span> which applies scaling to all genes which is stored in <span class="in">`all.genes`</span> object.</span>
+<span id="cb18-208"><a href="#cb18-208" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>This is then applied to <span class="in">`ScaleData`</span> function which uses <span class="in">`all.genes`</span> as features for scaling.</span>
+<span id="cb18-209"><a href="#cb18-209" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-210"><a href="#cb18-210" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb18-211"><a href="#cb18-211" aria-hidden="true" tabindex="-1"></a>all.genes <span class="ot">&lt;-</span> <span class="fu">rownames</span>(dat2Normalised2Obj)</span>
+<span id="cb18-212"><a href="#cb18-212" aria-hidden="true" tabindex="-1"></a>dat2ScaledObj <span class="ot">&lt;-</span> <span class="fu">ScaleData</span>(<span class="at">object =</span> dat2Normalised2Obj, <span class="at">features =</span> all.genes)</span>
+<span id="cb18-213"><a href="#cb18-213" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 </code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->

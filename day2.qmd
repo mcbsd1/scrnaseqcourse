@@ -1,7 +1,5 @@
 ---
 title: "Day 2"
-execute:
-  echo: false
 format:
   html:
     code-fold: true
@@ -134,4 +132,80 @@ VlnPlot(dat2Obj, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol 
 
 ![](images/Violin_plot_1k_data.png){width=100%}
 
+Try using ^MT- as pattern. What do you get?
 
+```r
+dat2Obj[["percent.mt"]] <- PercentageFeatureSet(dat2Obj, pattern = "^MT-")
+```
+
+- Next, you can plot a FeatureScatter plot for visualising feature-feature relationships.
+
+```r
+# Plot FeatureScatter plot
+plot1 <- FeatureScatter(dat2Obj, feature1 = "nCount_RNA", feature2 = "percent.mt")
+plot2 <- FeatureScatter(dat2Obj, feature1 = "nCount_RNA", feature2 = "nFeature_RNA")
+plot1 + plot2
+```
+
+![](images/FeatureScatter.png){width=100%}
+
+- Now, we will filter cells that have unique feature counts over 9000 or less than 200
+- We filter cells that have >5% mitochondrial counts
+
+```r
+dat2FilteredObj <- subset(dat2Obj, subset = nFeature_RNA > 200 & nFeature_RNA < 9000 &  percent.mt < 5)
+
+dat2FilteredObj
+# An object of class Seurat 
+# 18321 features across 1235 samples within 1 assay 
+# Active assay: RNA (18321 features, 0 variable features)
+#  1 layer present: counts
+```
+
+Lets break it down:
+- `nFeature_RNA > 200`: Keeps cells that have more than 200 detected genes (features). This removes low-quality cells or empty droplets.
+- `Feature_RNA < 9000`: Removes cells with too many detected genes, which might indicate doublets (two cells captured in one droplet).
+- `percent.mt < 5`: Filters out cells where mitochondrial gene percentage is greater than 5%. High mitochondrial content often indicates damaged or dying cells.
+
+- With this command, the number of cells reduces to 1235.
+
+#### Normalizing the data
+
+- After removing unwanted cells from the dataset, the next step is to normalize the data.
+- By default, we employ a global-scaling normalization method `LogNormalize` that normalizes the feature expression measurements for each cell by the total expression, multiplies this by a scale factor (10,000 by default), and log-transforms the result.
+- Normalized values are stored in `dat2NormalisedObj[["RNA"]]$data`
+
+```r
+dat2NormalisedObj <- NormalizeData(object = dat2FilteredObj, normalization.method = "LogNormalize", scale.factor = 10000)
+```
+
+- The use of `SCTransform` replaces the need to run `NormalizeData`, `FindVariableFeatures`, or `ScaleData`.
+
+#### Identification of highly variable features (feature selection)
+
+- We next calculate a subset of features (genes) that exhibit high cell-to-cell variation in the dataset.
+- These are the features those are highly expressed in some cells, and lowly expressed in others.
+- It has been found [Brennecke et al. Nat Methods.2013](https://www.nature.com/articles/nmeth.2645) that focusing on these genes in downstream analysis helps to highlight biological signal in single-cell datasets.
+
+```r
+dat2Normalised2Obj <- FindVariableFeatures(dat2NormalisedObj, selection.method = "vst", nfeatures = 2000)
+top10 <- head(VariableFeatures(dat2Normalised2Obj), 10)
+plot3 <- VariableFeaturePlot(dat2Normalised2Obj)
+plot4 <- LabelPoints(plot = plot3, points = top10, repel = TRUE)
+CombinePlots(plots = list(plot3, plot4))
+```
+
+![](images/VariableGenesPlot.png){width=100%}
+
+#### Scaling the data
+
+- The `ScaleData` function in Seurat is used to normalize and scale gene expression values across cells.
+- Additionally, it can **regress out unwanted sources of variation**, such as sequencing depth (`nUMI`) or mitochondrial gene percentage (`percent.mito`), helping to remove technical artifacts.
+- By default, only variable features are scaled.
+- But if you observe, in out script, we have used `rownames(dat2Normalised2Obj)` which applies scaling to all genes which is stored in `all.genes` object.
+- This is then applied to `ScaleData` function which uses `all.genes` as features for scaling.
+
+```r
+all.genes <- rownames(dat2Normalised2Obj)
+dat2ScaledObj <- ScaleData(object = dat2Normalised2Obj, features = all.genes)
+```

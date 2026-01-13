@@ -7,7 +7,7 @@ website:
   navbar:
     left:
       - href: index.qmd
-        text: Home
+        text: Day 1
       - href: day2.qmd
         text: Day 2
       - about.qmd
