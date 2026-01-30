@@ -209,3 +209,119 @@ CombinePlots(plots = list(plot3, plot4))
 all.genes <- rownames(dat2Normalised2Obj)
 dat2ScaledObj <- ScaleData(object = dat2Normalised2Obj, features = all.genes)
 ```
+
+##### How can I remove unwanted sources of variation ?
+
+- To remove unwanted sources of variation from a single-cell dataset, such as "percent.mt", use "vars.to.regress" to include these:
+
+```r
+dat2ScaledObj <- ScaleData(object = dat2Normalised2Obj, features = all.genes, vars.to.regress = "percent.mt")
+```
+
+#### Perform linear dimensional reduction
+
+- Next we perform PCA on the scaled data.
+- By default, only the previously determined variable features are used as input, but can be defined using `features` argument if you wish to choose a different subset.
+
+```r
+dat2Scaled2Obj <- RunPCA(object = dat2ScaledObj, features = VariableFeatures(object = dat2ScaledObj), do.print = TRUE, ndims.print = 1:5, nfeatures.print = 5)
+```
+
+- This command uses only the highly variable genes (`VariableFeatures(object = dat2ScaledObj)`) instead of all genes to reduce noise and improve clustering.
+- `do.print = TRUE` prints the top genes contributing to each principal component (PC).
+- `pcs.print = 1:5` displays the results for PC1 to PC5 (i.e., the first five principal components).
+- PC1 (Principal Component 1) is the most important axes of variation.
+- PC2, PC3, PC4, etc. explain additional variation in the data.
+- Top Positive Genes **(e.g., Ldb2, Ebf1, Prkg1, Meis2)** are more highly expressed in one subset of cells.
+- Top Negative Genes **(e.g., Slc27a2, Keg1, Sugct)** are more highly expressed in another subset.
+- PC1 may capture a major biological signal, such as cell type differences.
+- If PC2 separates a different cell population, it might represent a different biological process, like a cell cycle state or differentiation.
+
+- `DimHeatmap()` allows for easy exploration of the primary sources of heterogeneity in a dataset, and can be useful when trying to decide which PCs to include for further downstream analyses.
+
+```r
+DimHeatmap(
+    object = dat2Scaled2Obj, 
+    dims = 1, 
+    balanced = TRUE
+)
+```
+
+![](images/PC1_dimheatmap.png){width=100%}
+
+- Now, use dims 1 to 15 to plot 15 PCs to observe which PCs contribute to sources of variation in the dataset.
+
+```r
+DimHeatmap(
+    object = dat2Scaled2Obj, 
+    dims = 1:15, 
+    balanced = TRUE
+)
+```
+
+![](images/PC1-15_dimheatmap.png){width=100%}
+
+#### Determining dimensionality
+
+- After running PCA using `RunPCA()`, you need to determine how many PCs to retain for clustering and downstream analysis.
+- One common method is using the Elbow Plot.
+- The top principal components represents highest variations in the dataset.
+- So, how many components should we choose to include? 10? 20? 100?
+- In ‘Elbow plot’ it ranks principle components based on the percentage of variance explained by each one.
+
+```r
+ElbowPlot(dat2Scaled2Obj)
+```
+
+![](images/elbowplot.png){width=100%}
+
+- If we are considering going with the default settings with `ndims = 20`, then we can clearly see that at the elbow point is at PC 11 which accounts for most variation in the dataset.
+
+- However, if we choose to include `ndims = 50`, then the elbow plot changes and includes 50 PCs. 
+
+```r
+ElbowPlot(dat2Scaled2Obj, ndims = 50)
+```
+
+![](images/elbowplot-50.png){width=100%}
+
+- Now, this gives us a much broader picture and also shows more PCs are contributing to variation beyond PC 11.
+- With this plot, we can keep the value between PC 21-25.
+- In this tutorial, I have chosen PC 25 to stretch the limit and include smaller variance. But the value of 21 will also work fine. 
+
+#### Clustering
+
+- Seurat applies a graph-based clustering approach, called Shared Nearest Neighbors (SNN).
+- How the SNN Score is Computed:
+  - If cell A’s neighbor list and cell B’s neighbor list share many cells, they are likely to be in the same cluster.
+  - The SNN score (edge weight) is higher if two cells have more shared neighbors.
+- Example:
+  - Cell A’s neighbors: {B, C, D, E}
+  - Cell B’s neighbors: {A, C, D, F}
+  - Cell A and Cell B share: {C, D}
+  - SNN score = Number of shared neighbors / Minimum kNN list size
+  - SNN score = 2 / 4 = 0.5
+- If two cells share many of their nearest neighbors, their SNN score is high, and they are more likely to belong to the same cluster.
+
+![](images/nearest-neighbour.png){width=100%}
+
+- So, the first step is performed using the `FindNeighbors()` function, and takes as input the previously defined dimensionality of the dataset (first 25 PCs).
+- To cluster the cells, we next apply modularity optimization techniques such as the Louvain algorithm (default) or SLM to iteratively group cells together.
+- The `FindClusters()` function implements this procedure, and contains a resolution parameter that sets the ‘granularity’ of the downstream clustering, with increased values leading to a greater number of clusters.
+
+
+Run the following commands:
+
+```r
+seuratFindNeighbors <- FindNeighbors(
+    dat2Scaled2Obj,
+    reduction = "pca",
+    dims = 1:25,
+    do.plot = FALSE,
+    graph.name = NULL,
+    k.param = 30
+)
+
+seuratFindClusters <- FindClusters(object = seuratFindNeighbors)
+```
+
