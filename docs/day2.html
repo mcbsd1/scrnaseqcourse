@@ -158,7 +158,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#recap-from-day-1" id="toc-recap-from-day-1" class="nav-link" data-scroll-target="#recap-from-day-1">Recap from Day 1</a></li>
   <li><a href="#outputs-from-the-nextflow-pipeline" id="toc-outputs-from-the-nextflow-pipeline" class="nav-link" data-scroll-target="#outputs-from-the-nextflow-pipeline">Outputs from the nextflow pipeline</a></li>
   <li><a href="#downloading-data-for-analysis-in-seurat-for-analysis-on-rstudio-on-local-system" id="toc-downloading-data-for-analysis-in-seurat-for-analysis-on-rstudio-on-local-system" class="nav-link" data-scroll-target="#downloading-data-for-analysis-in-seurat-for-analysis-on-rstudio-on-local-system">Downloading data for analysis in Seurat (for analysis on RStudio on local system)</a></li>
-  <li><a href="#processing-scrnaseq-data-1k_mouse_kidney_cnik_3pv3-in-seurat" id="toc-processing-scrnaseq-data-1k_mouse_kidney_cnik_3pv3-in-seurat" class="nav-link" data-scroll-target="#processing-scrnaseq-data-1k_mouse_kidney_cnik_3pv3-in-seurat">Processing scrnaseq data (1k_mouse_kidney_CNIK_3pv3) in Seurat</a></li>
+  <li><a href="#processing-scrnaseq-data-1k_mouse_kidney_cnik_3pv3-in-seurat" id="toc-processing-scrnaseq-data-1k_mouse_kidney_cnik_3pv3-in-seurat" class="nav-link" data-scroll-target="#processing-scrnaseq-data-1k_mouse_kidney_cnik_3pv3-in-seurat">Processing scrnaseq data (1k_mouse_kidney_CNIK_3pv3) in Seurat</a>
+  <ul class="collapse">
+  <li><a href="#load-libraries" id="toc-load-libraries" class="nav-link" data-scroll-target="#load-libraries">Load libraries</a></li>
+  <li><a href="#setup-the-seurat-object" id="toc-setup-the-seurat-object" class="nav-link" data-scroll-target="#setup-the-seurat-object">Setup the Seurat object</a></li>
+  <li><a href="#normalizing-the-data" id="toc-normalizing-the-data" class="nav-link" data-scroll-target="#normalizing-the-data">Normalizing the data</a></li>
+  <li><a href="#identification-of-highly-variable-features-feature-selection" id="toc-identification-of-highly-variable-features-feature-selection" class="nav-link" data-scroll-target="#identification-of-highly-variable-features-feature-selection">Identification of highly variable features (feature selection)</a></li>
+  <li><a href="#scaling-the-data" id="toc-scaling-the-data" class="nav-link" data-scroll-target="#scaling-the-data">Scaling the data</a></li>
+  <li><a href="#perform-linear-dimensional-reduction" id="toc-perform-linear-dimensional-reduction" class="nav-link" data-scroll-target="#perform-linear-dimensional-reduction">Perform linear dimensional reduction</a></li>
+  <li><a href="#determining-dimensionality" id="toc-determining-dimensionality" class="nav-link" data-scroll-target="#determining-dimensionality">Determining dimensionality</a></li>
+  <li><a href="#clustering" id="toc-clustering" class="nav-link" data-scroll-target="#clustering">Clustering</a></li>
+  </ul></li>
   </ul></li>
   </ul>
 </nav>
@@ -257,8 +267,8 @@ cd cellranger_count_1k_mouse_kidney_CNIK_3pv3</code></pre>
 <li>Delete lines from 7 until 29 except first 5-6 lines.</li>
 </ul>
 <p><img src="images/rmarkdown-2.png" class="img-fluid" style="width:100.0%"></p>
-<section id="load-libraries" class="level4">
-<h4 class="anchored" data-anchor-id="load-libraries">Load libraries</h4>
+<section id="load-libraries" class="level3">
+<h3 class="anchored" data-anchor-id="load-libraries">Load libraries</h3>
 <ul>
 <li>Copy the line in your markdown document:</li>
 </ul>
@@ -294,8 +304,8 @@ Attaching package: 'SeuratObject'</code></pre>
 </ul>
 <p><img src="images/rmarkdown-1.png" class="img-fluid" style="width:100.0%"></p>
 </section>
-<section id="setup-the-seurat-object" class="level4">
-<h4 class="anchored" data-anchor-id="setup-the-seurat-object">Setup the Seurat object</h4>
+<section id="setup-the-seurat-object" class="level3">
+<h3 class="anchored" data-anchor-id="setup-the-seurat-object">Setup the Seurat object</h3>
 <ul>
 <li>We start by reading in the data. The <code>Read10X()</code> function reads in the output of the cellranger pipeline from 10X, returning a unique molecular identified (UMI) count matrix.</li>
 <li>The values in this matrix represent the number of molecules for each feature (i.e.&nbsp;gene; row) that are detected in each cell (column).</li>
@@ -309,7 +319,6 @@ Attaching package: 'SeuratObject'</code></pre>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>dat2Obj <span class="ot">&lt;-</span> <span class="fu">CreateSeuratObject</span>(<span class="at">counts =</span> dat2, <span class="at">project =</span> <span class="st">"1KmouseKidney"</span>, <span class="at">min.cells =</span> <span class="dv">3</span>, <span class="at">min.features =</span> <span class="dv">200</span>)</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>dat2Obj</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</section>
 <section id="qc-and-filtering-cells-for-further-analysis" class="level4">
 <h4 class="anchored" data-anchor-id="qc-and-filtering-cells-for-further-analysis">QC and filtering cells for further analysis</h4>
 <ul>
@@ -363,8 +372,9 @@ Attaching package: 'SeuratObject'</code></pre>
 <li>With this command, the number of cells reduces to 1235.</li>
 </ul>
 </section>
-<section id="normalizing-the-data" class="level4">
-<h4 class="anchored" data-anchor-id="normalizing-the-data">Normalizing the data</h4>
+</section>
+<section id="normalizing-the-data" class="level3">
+<h3 class="anchored" data-anchor-id="normalizing-the-data">Normalizing the data</h3>
 <ul>
 <li>After removing unwanted cells from the dataset, the next step is to normalize the data.</li>
 <li>By default, we employ a global-scaling normalization method <code>LogNormalize</code> that normalizes the feature expression measurements for each cell by the total expression, multiplies this by a scale factor (10,000 by default), and log-transforms the result.</li>
@@ -375,8 +385,8 @@ Attaching package: 'SeuratObject'</code></pre>
 <li>The use of <code>SCTransform</code> replaces the need to run <code>NormalizeData</code>, <code>FindVariableFeatures</code>, or <code>ScaleData</code>.</li>
 </ul>
 </section>
-<section id="identification-of-highly-variable-features-feature-selection" class="level4">
-<h4 class="anchored" data-anchor-id="identification-of-highly-variable-features-feature-selection">Identification of highly variable features (feature selection)</h4>
+<section id="identification-of-highly-variable-features-feature-selection" class="level3">
+<h3 class="anchored" data-anchor-id="identification-of-highly-variable-features-feature-selection">Identification of highly variable features (feature selection)</h3>
 <ul>
 <li>We next calculate a subset of features (genes) that exhibit high cell-to-cell variation in the dataset.</li>
 <li>These are the features those are highly expressed in some cells, and lowly expressed in others.</li>
@@ -389,8 +399,8 @@ Attaching package: 'SeuratObject'</code></pre>
 <span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="fu">CombinePlots</span>(<span class="at">plots =</span> <span class="fu">list</span>(plot3, plot4))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p><img src="images/VariableGenesPlot.png" class="img-fluid" style="width:100.0%"></p>
 </section>
-<section id="scaling-the-data" class="level4">
-<h4 class="anchored" data-anchor-id="scaling-the-data">Scaling the data</h4>
+<section id="scaling-the-data" class="level3">
+<h3 class="anchored" data-anchor-id="scaling-the-data">Scaling the data</h3>
 <ul>
 <li>The <code>ScaleData</code> function in Seurat is used to normalize and scale gene expression values across cells.</li>
 <li>Additionally, it can <strong>regress out unwanted sources of variation</strong>, such as sequencing depth (<code>nUMI</code>) or mitochondrial gene percentage (<code>percent.mito</code>), helping to remove technical artifacts.</li>
@@ -400,16 +410,16 @@ Attaching package: 'SeuratObject'</code></pre>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>all.genes <span class="ot">&lt;-</span> <span class="fu">rownames</span>(dat2Normalised2Obj)</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>dat2ScaledObj <span class="ot">&lt;-</span> <span class="fu">ScaleData</span>(<span class="at">object =</span> dat2Normalised2Obj, <span class="at">features =</span> all.genes)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<section id="how-can-i-remove-unwanted-sources-of-variation" class="level5">
-<h5 class="anchored" data-anchor-id="how-can-i-remove-unwanted-sources-of-variation">How can I remove unwanted sources of variation ?</h5>
+<section id="how-can-i-remove-unwanted-sources-of-variation" class="level4">
+<h4 class="anchored" data-anchor-id="how-can-i-remove-unwanted-sources-of-variation">How can I remove unwanted sources of variation ?</h4>
 <ul>
 <li>To remove unwanted sources of variation from a single-cell dataset, such as “percent.mt”, use “vars.to.regress” to include these:</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>dat2ScaledObj <span class="ot">&lt;-</span> <span class="fu">ScaleData</span>(<span class="at">object =</span> dat2Normalised2Obj, <span class="at">features =</span> all.genes, <span class="at">vars.to.regress =</span> <span class="st">"percent.mt"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 </section>
-<section id="perform-linear-dimensional-reduction" class="level4">
-<h4 class="anchored" data-anchor-id="perform-linear-dimensional-reduction">Perform linear dimensional reduction</h4>
+<section id="perform-linear-dimensional-reduction" class="level3">
+<h3 class="anchored" data-anchor-id="perform-linear-dimensional-reduction">Perform linear dimensional reduction</h3>
 <ul>
 <li>Next we perform PCA on the scaled data.</li>
 <li>By default, only the previously determined variable features are used as input, but can be defined using <code>features</code> argument if you wish to choose a different subset.</li>
@@ -443,8 +453,8 @@ Attaching package: 'SeuratObject'</code></pre>
 <span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p><img src="images/PC1-15_dimheatmap.png" class="img-fluid" style="width:100.0%"></p>
 </section>
-<section id="determining-dimensionality" class="level4">
-<h4 class="anchored" data-anchor-id="determining-dimensionality">Determining dimensionality</h4>
+<section id="determining-dimensionality" class="level3">
+<h3 class="anchored" data-anchor-id="determining-dimensionality">Determining dimensionality</h3>
 <ul>
 <li>After running PCA using <code>RunPCA()</code>, you need to determine how many PCs to retain for clustering and downstream analysis.</li>
 <li>One common method is using the Elbow Plot.</li>
@@ -466,8 +476,8 @@ Attaching package: 'SeuratObject'</code></pre>
 <li>In this tutorial, I have chosen PC 25 to stretch the limit and include smaller variance. But the value of 21 will also work fine.</li>
 </ul>
 </section>
-<section id="clustering" class="level4">
-<h4 class="anchored" data-anchor-id="clustering">Clustering</h4>
+<section id="clustering" class="level3">
+<h3 class="anchored" data-anchor-id="clustering">Clustering</h3>
 <ul>
 <li>Seurat applies a graph-based clustering approach, called Shared Nearest Neighbors (SNN).</li>
 <li>How the SNN Score is Computed:
@@ -1036,7 +1046,7 @@ Attaching package: 'SeuratObject'</code></pre>
 <span id="cb25-72"><a href="#cb25-72" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb25-73"><a href="#cb25-73" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/rmarkdown-2.png)</span>{width=100%}</span>
 <span id="cb25-74"><a href="#cb25-74" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-75"><a href="#cb25-75" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Load libraries</span></span>
+<span id="cb25-75"><a href="#cb25-75" aria-hidden="true" tabindex="-1"></a><span class="fu">### Load libraries</span></span>
 <span id="cb25-76"><a href="#cb25-76" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb25-77"><a href="#cb25-77" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Copy the line in your markdown document:</span>
 <span id="cb25-78"><a href="#cb25-78" aria-hidden="true" tabindex="-1"></a></span>
@@ -1051,7 +1061,7 @@ Attaching package: 'SeuratObject'</code></pre>
 <span id="cb25-89"><a href="#cb25-89" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb25-90"><a href="#cb25-90" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/rmarkdown-1.png)</span>{width=100%}</span>
 <span id="cb25-91"><a href="#cb25-91" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-92"><a href="#cb25-92" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Setup the Seurat object</span></span>
+<span id="cb25-92"><a href="#cb25-92" aria-hidden="true" tabindex="-1"></a><span class="fu">### Setup the Seurat object</span></span>
 <span id="cb25-93"><a href="#cb25-93" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb25-94"><a href="#cb25-94" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>We start by reading in the data. The <span class="in">`Read10X()`</span> function reads in the output of the cellranger pipeline from 10X, returning a unique molecular identified (UMI) count matrix.</span>
 <span id="cb25-95"><a href="#cb25-95" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The values in this matrix represent the number of molecules for each feature (i.e. gene; row) that are detected in each cell (column).</span>
@@ -1133,7 +1143,7 @@ Attaching package: 'SeuratObject'</code></pre>
 <span id="cb25-171"><a href="#cb25-171" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb25-172"><a href="#cb25-172" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>With this command, the number of cells reduces to 1235.</span>
 <span id="cb25-173"><a href="#cb25-173" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-174"><a href="#cb25-174" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Normalizing the data</span></span>
+<span id="cb25-174"><a href="#cb25-174" aria-hidden="true" tabindex="-1"></a><span class="fu">### Normalizing the data</span></span>
 <span id="cb25-175"><a href="#cb25-175" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb25-176"><a href="#cb25-176" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>After removing unwanted cells from the dataset, the next step is to normalize the data.</span>
 <span id="cb25-177"><a href="#cb25-177" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>By default, we employ a global-scaling normalization method <span class="in">`LogNormalize`</span> that normalizes the feature expression measurements for each cell by the total expression, multiplies this by a scale factor (10,000 by default), and log-transforms the result.</span>
@@ -1145,7 +1155,7 @@ Attaching package: 'SeuratObject'</code></pre>
 <span id="cb25-183"><a href="#cb25-183" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb25-184"><a href="#cb25-184" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The use of <span class="in">`SCTransform`</span> replaces the need to run <span class="in">`NormalizeData`</span>, <span class="in">`FindVariableFeatures`</span>, or <span class="in">`ScaleData`</span>.</span>
 <span id="cb25-185"><a href="#cb25-185" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-186"><a href="#cb25-186" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Identification of highly variable features (feature selection)</span></span>
+<span id="cb25-186"><a href="#cb25-186" aria-hidden="true" tabindex="-1"></a><span class="fu">### Identification of highly variable features (feature selection)</span></span>
 <span id="cb25-187"><a href="#cb25-187" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb25-188"><a href="#cb25-188" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>We next calculate a subset of features (genes) that exhibit high cell-to-cell variation in the dataset.</span>
 <span id="cb25-189"><a href="#cb25-189" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>These are the features those are highly expressed in some cells, and lowly expressed in others.</span>
@@ -1161,7 +1171,7 @@ Attaching package: 'SeuratObject'</code></pre>
 <span id="cb25-199"><a href="#cb25-199" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb25-200"><a href="#cb25-200" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/VariableGenesPlot.png)</span>{width=100%}</span>
 <span id="cb25-201"><a href="#cb25-201" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-202"><a href="#cb25-202" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Scaling the data</span></span>
+<span id="cb25-202"><a href="#cb25-202" aria-hidden="true" tabindex="-1"></a><span class="fu">### Scaling the data</span></span>
 <span id="cb25-203"><a href="#cb25-203" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb25-204"><a href="#cb25-204" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The <span class="in">`ScaleData`</span> function in Seurat is used to normalize and scale gene expression values across cells.</span>
 <span id="cb25-205"><a href="#cb25-205" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Additionally, it can **regress out unwanted sources of variation**, such as sequencing depth (<span class="in">`nUMI`</span>) or mitochondrial gene percentage (<span class="in">`percent.mito`</span>), helping to remove technical artifacts.</span>
@@ -1174,7 +1184,7 @@ Attaching package: 'SeuratObject'</code></pre>
 <span id="cb25-212"><a href="#cb25-212" aria-hidden="true" tabindex="-1"></a>dat2ScaledObj <span class="ot">&lt;-</span> <span class="fu">ScaleData</span>(<span class="at">object =</span> dat2Normalised2Obj, <span class="at">features =</span> all.genes)</span>
 <span id="cb25-213"><a href="#cb25-213" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb25-214"><a href="#cb25-214" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-215"><a href="#cb25-215" aria-hidden="true" tabindex="-1"></a><span class="fu">##### How can I remove unwanted sources of variation ?</span></span>
+<span id="cb25-215"><a href="#cb25-215" aria-hidden="true" tabindex="-1"></a><span class="fu">#### How can I remove unwanted sources of variation ?</span></span>
 <span id="cb25-216"><a href="#cb25-216" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb25-217"><a href="#cb25-217" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>To remove unwanted sources of variation from a single-cell dataset, such as "percent.mt", use "vars.to.regress" to include these:</span>
 <span id="cb25-218"><a href="#cb25-218" aria-hidden="true" tabindex="-1"></a></span>
@@ -1182,7 +1192,7 @@ Attaching package: 'SeuratObject'</code></pre>
 <span id="cb25-220"><a href="#cb25-220" aria-hidden="true" tabindex="-1"></a>dat2ScaledObj <span class="ot">&lt;-</span> <span class="fu">ScaleData</span>(<span class="at">object =</span> dat2Normalised2Obj, <span class="at">features =</span> all.genes, <span class="at">vars.to.regress =</span> <span class="st">"percent.mt"</span>)</span>
 <span id="cb25-221"><a href="#cb25-221" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb25-222"><a href="#cb25-222" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-223"><a href="#cb25-223" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Perform linear dimensional reduction</span></span>
+<span id="cb25-223"><a href="#cb25-223" aria-hidden="true" tabindex="-1"></a><span class="fu">### Perform linear dimensional reduction</span></span>
 <span id="cb25-224"><a href="#cb25-224" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb25-225"><a href="#cb25-225" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Next we perform PCA on the scaled data.</span>
 <span id="cb25-226"><a href="#cb25-226" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>By default, only the previously determined variable features are used as input, but can be defined using <span class="in">`features`</span> argument if you wish to choose a different subset.</span>
@@ -1225,7 +1235,7 @@ Attaching package: 'SeuratObject'</code></pre>
 <span id="cb25-263"><a href="#cb25-263" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb25-264"><a href="#cb25-264" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/PC1-15_dimheatmap.png)</span>{width=100%}</span>
 <span id="cb25-265"><a href="#cb25-265" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-266"><a href="#cb25-266" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Determining dimensionality</span></span>
+<span id="cb25-266"><a href="#cb25-266" aria-hidden="true" tabindex="-1"></a><span class="fu">### Determining dimensionality</span></span>
 <span id="cb25-267"><a href="#cb25-267" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb25-268"><a href="#cb25-268" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>After running PCA using <span class="in">`RunPCA()`</span>, you need to determine how many PCs to retain for clustering and downstream analysis.</span>
 <span id="cb25-269"><a href="#cb25-269" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>One common method is using the Elbow Plot.</span>
@@ -1253,7 +1263,7 @@ Attaching package: 'SeuratObject'</code></pre>
 <span id="cb25-291"><a href="#cb25-291" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>With this plot, we can keep the value between PC 21-25.</span>
 <span id="cb25-292"><a href="#cb25-292" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>In this tutorial, I have chosen PC 25 to stretch the limit and include smaller variance. But the value of 21 will also work fine. </span>
 <span id="cb25-293"><a href="#cb25-293" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-294"><a href="#cb25-294" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Clustering</span></span>
+<span id="cb25-294"><a href="#cb25-294" aria-hidden="true" tabindex="-1"></a><span class="fu">### Clustering</span></span>
 <span id="cb25-295"><a href="#cb25-295" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb25-296"><a href="#cb25-296" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Seurat applies a graph-based clustering approach, called Shared Nearest Neighbors (SNN).</span>
 <span id="cb25-297"><a href="#cb25-297" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>How the SNN Score is Computed:</span>

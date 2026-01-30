@@ -72,7 +72,7 @@ cd cellranger_count_1k_mouse_kidney_CNIK_3pv3
 
 ![](images/rmarkdown-2.png){width=100%}
 
-#### Load libraries
+### Load libraries
 
 - Copy the line in your markdown document:
 
@@ -87,7 +87,7 @@ library(Seurat)
 
 ![](images/rmarkdown-1.png){width=100%}
 
-#### Setup the Seurat object
+### Setup the Seurat object
 
 - We start by reading in the data. The `Read10X()` function reads in the output of the cellranger pipeline from 10X, returning a unique molecular identified (UMI) count matrix.
 - The values in this matrix represent the number of molecules for each feature (i.e. gene; row) that are detected in each cell (column).
@@ -169,7 +169,7 @@ Lets break it down:
 
 - With this command, the number of cells reduces to 1235.
 
-#### Normalizing the data
+### Normalizing the data
 
 - After removing unwanted cells from the dataset, the next step is to normalize the data.
 - By default, we employ a global-scaling normalization method `LogNormalize` that normalizes the feature expression measurements for each cell by the total expression, multiplies this by a scale factor (10,000 by default), and log-transforms the result.
@@ -181,7 +181,7 @@ dat2NormalisedObj <- NormalizeData(object = dat2FilteredObj, normalization.metho
 
 - The use of `SCTransform` replaces the need to run `NormalizeData`, `FindVariableFeatures`, or `ScaleData`.
 
-#### Identification of highly variable features (feature selection)
+### Identification of highly variable features (feature selection)
 
 - We next calculate a subset of features (genes) that exhibit high cell-to-cell variation in the dataset.
 - These are the features those are highly expressed in some cells, and lowly expressed in others.
@@ -197,7 +197,7 @@ CombinePlots(plots = list(plot3, plot4))
 
 ![](images/VariableGenesPlot.png){width=100%}
 
-#### Scaling the data
+### Scaling the data
 
 - The `ScaleData` function in Seurat is used to normalize and scale gene expression values across cells.
 - Additionally, it can **regress out unwanted sources of variation**, such as sequencing depth (`nUMI`) or mitochondrial gene percentage (`percent.mito`), helping to remove technical artifacts.
@@ -210,7 +210,7 @@ all.genes <- rownames(dat2Normalised2Obj)
 dat2ScaledObj <- ScaleData(object = dat2Normalised2Obj, features = all.genes)
 ```
 
-##### How can I remove unwanted sources of variation ?
+#### How can I remove unwanted sources of variation ?
 
 - To remove unwanted sources of variation from a single-cell dataset, such as "percent.mt", use "vars.to.regress" to include these:
 
@@ -218,7 +218,7 @@ dat2ScaledObj <- ScaleData(object = dat2Normalised2Obj, features = all.genes)
 dat2ScaledObj <- ScaleData(object = dat2Normalised2Obj, features = all.genes, vars.to.regress = "percent.mt")
 ```
 
-#### Perform linear dimensional reduction
+### Perform linear dimensional reduction
 
 - Next we perform PCA on the scaled data.
 - By default, only the previously determined variable features are used as input, but can be defined using `features` argument if you wish to choose a different subset.
@@ -261,7 +261,7 @@ DimHeatmap(
 
 ![](images/PC1-15_dimheatmap.png){width=100%}
 
-#### Determining dimensionality
+### Determining dimensionality
 
 - After running PCA using `RunPCA()`, you need to determine how many PCs to retain for clustering and downstream analysis.
 - One common method is using the Elbow Plot.
@@ -289,7 +289,7 @@ ElbowPlot(dat2Scaled2Obj, ndims = 50)
 - With this plot, we can keep the value between PC 21-25.
 - In this tutorial, I have chosen PC 25 to stretch the limit and include smaller variance. But the value of 21 will also work fine. 
 
-#### Clustering
+### Clustering
 
 - Seurat applies a graph-based clustering approach, called Shared Nearest Neighbors (SNN).
 - How the SNN Score is Computed:
