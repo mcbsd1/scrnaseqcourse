@@ -168,6 +168,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#perform-linear-dimensional-reduction" id="toc-perform-linear-dimensional-reduction" class="nav-link" data-scroll-target="#perform-linear-dimensional-reduction">Perform linear dimensional reduction</a></li>
   <li><a href="#determining-dimensionality" id="toc-determining-dimensionality" class="nav-link" data-scroll-target="#determining-dimensionality">Determining dimensionality</a></li>
   <li><a href="#clustering" id="toc-clustering" class="nav-link" data-scroll-target="#clustering">Clustering</a></li>
+  <li><a href="#non-linear-dimensional-reduction" id="toc-non-linear-dimensional-reduction" class="nav-link" data-scroll-target="#non-linear-dimensional-reduction">Non-linear dimensional reduction</a></li>
+  <li><a href="#doublet-detection-and-removal" id="toc-doublet-detection-and-removal" class="nav-link" data-scroll-target="#doublet-detection-and-removal">Doublet detection and removal</a></li>
+  <li><a href="#remove-doublets-and-pre-process-singlets" id="toc-remove-doublets-and-pre-process-singlets" class="nav-link" data-scroll-target="#remove-doublets-and-pre-process-singlets">Remove doublets and pre-process singlets</a></li>
   </ul></li>
   </ul></li>
   </ul>
@@ -512,6 +515,170 @@ Attaching package: 'SeuratObject'</code></pre>
 <span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>seuratFindClusters <span class="ot">&lt;-</span> <span class="fu">FindClusters</span>(<span class="at">object =</span> seuratFindNeighbors)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="non-linear-dimensional-reduction" class="level3">
+<h3 class="anchored" data-anchor-id="non-linear-dimensional-reduction">Non-linear dimensional reduction</h3>
+<ul>
+<li>Seurat offers several non-linear dimensional reduction techniques, such as tSNE and UMAP, to visualize and explore these datasets.</li>
+<li>The goal of these algorithms is to learn underlying structure in the dataset, in order to place similar cells together in low-dimensional space.</li>
+<li>Therefore, cells that are grouped together within graph-based clusters determined above should co-localize on these dimension reduction plots.</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>dat2UMAP <span class="ot">&lt;-</span> <span class="fu">RunUMAP</span>(seuratFindClusters, <span class="at">reduction =</span> <span class="st">"pca"</span>, <span class="at">dims =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">25</span>, <span class="at">n.neighbors =</span> <span class="dv">30</span>L, <span class="at">min.dist =</span> <span class="fl">0.3</span>, <span class="at">seed.use =</span> <span class="dv">123456</span>L)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>If you see that we have used 25 PCs and <code>n.neighbors</code> as 30</li>
+<li><code>n.neighbors</code> defines the number of nearest neighbors considered when constructing the UMAP graph.</li>
+<li>Larger values capture broader structures, while smaller values focus on finer details.</li>
+</ul>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 37%">
+<col style="width: 41%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: center;"><code>n.neighbors</code> Value</th>
+<th style="text-align: left;">Effect on UMAP</th>
+<th style="text-align: left;">When to Use?</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">Low (5-15)</td>
+<td style="text-align: left;">Captures local structure, fine details</td>
+<td style="text-align: left;">Small datasets, cluster refinement</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Default (30)</td>
+<td style="text-align: left;">Balanced between local and global structure</td>
+<td style="text-align: left;">General use case</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">High (50-100)</td>
+<td style="text-align: left;">Preserves global relationships, reduces fragmentation</td>
+<td style="text-align: left;">Large datasets, broader clusters</td>
+</tr>
+</tbody>
+</table>
+<p>To generate UMAP, run the following command:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">DimPlot</span>(dat2UMAP, <span class="at">reduction =</span> <span class="st">"umap"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><img src="images/umap.png" class="img-fluid" style="width:100.0%"></p>
+</section>
+<section id="doublet-detection-and-removal" class="level3">
+<h3 class="anchored" data-anchor-id="doublet-detection-and-removal">Doublet detection and removal</h3>
+<ul>
+<li>In scRNA-seq experiments, doublets are artifactual libraries generated from two cells.</li>
+<li>Doublets are defined when two or more cells are mistakenly treated as a single cell.</li>
+<li>They typically arise due to errors in cell sorting or capture, especially in droplet-based protocols involving thousands of cells.</li>
+<li>In this workshop, we will be using <code>DoubletFinder</code>.</li>
+<li>It is a tool used to detect and remove doublets (artificially merged cells) in scRNA-seq data.</li>
+<li>Below is a step-by-step guide to doublet detection and removal in Seurat using DoubletFinder.</li>
+</ul>
+<p><strong>Step 1: Install and Load Required Packages</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>remotes<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">'chris-mcginnis-ucsf/DoubletFinder'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Once the package is installed, the load the library.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(DoubletFinder)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Step 2: Parameter Sweeping for pK Selection</strong></p>
+<p>Sweep a range of parameters to find the optimal pK.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>sweep.res.list <span class="ot">&lt;-</span> <span class="fu">paramSweep</span>(dat2UMAP, <span class="at">PCs =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>, <span class="at">sct =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>sweep.stats <span class="ot">&lt;-</span> <span class="fu">summarizeSweep</span>(sweep.res.list, <span class="at">GT =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>bcmvn <span class="ot">&lt;-</span> <span class="fu">find.pK</span>(sweep.stats)</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>pk <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">as.vector</span>(bcmvn<span class="sc">$</span>pK)[<span class="fu">which.max</span>(bcmvn<span class="sc">$</span>BCmetric)])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li><code>paramSweep()</code>: Tests multiple pK (parameter K) values using PCs 1 to 20.</li>
+<li><code>summarizeSweep()</code>: Summarizes results into a dataframe.</li>
+<li><code>find.pK()</code>: Finds the best pK using a “BCmetric” score.</li>
+<li><code>which.max(bcmvn$BCmetric)</code>: Selects the pK value with the highest BCmetric, as this gives the best separation between doublets and singlets.</li>
+</ul>
+<p><strong>Why do we need pK?</strong></p>
+<ul>
+<li><code>pK</code> is a clustering resolution parameter that affects doublet detection.</li>
+<li>A higher BCmetric means better performance of a given pK.</li>
+</ul>
+<p><strong>Step 3: Estimate the Expected Number of Doublets</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>annotations <span class="ot">&lt;-</span> dat2UMAP<span class="sc">@</span>active.ident</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>homotypic.prop <span class="ot">&lt;-</span> <span class="fu">modelHomotypic</span>(annotations)</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>nExp_poi <span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fl">0.076</span> <span class="sc">*</span> <span class="fu">length</span>(dat2UMAP<span class="sc">@</span>active.ident))</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>nExp_poi.adj <span class="ot">&lt;-</span> <span class="fu">round</span>(nExp_poi <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> homotypic.prop))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li><code>modelHomotypic(annotations)</code>: Estimates homotypic doublets (cells of the same type that are mistakenly identified as a doublet).</li>
+<li><code>nExp_poi &lt;- round(0.076 * length(p1tumorFilteredObj@active.ident))</code>:
+<ul>
+<li>Uses 10X Genomics’ doublet rate formula: ~7.6% (0.076) × number of cells.</li>
+<li>This gives the expected number of doublets (<code>nExp_poi</code>) in the dataset.</li>
+</ul></li>
+<li><code>nExp_poi.adj &lt;- round(nExp_poi * (1 - homotypic.prop))</code>
+<ul>
+<li>Adjusts for homotypic doublets to avoid over-filtering.</li>
+</ul></li>
+</ul>
+<p><strong>Why adjust for homotypic proportion?</strong></p>
+<ul>
+<li>If cells in a cluster are mostly from the same cell type, they might be misclassified as doublets.</li>
+<li>This adjustment prevents over-filtering of true biological clusters.</li>
+</ul>
+<p><strong>Step 4: Run DoubletFinder (First Pass)</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>seuratDoublet <span class="ot">&lt;-</span> <span class="fu">doubletFinder</span>(dat2UMAP, <span class="at">PCs =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>, <span class="at">pN =</span> <span class="fl">0.25</span>, <span class="at">pK =</span> pk, </span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>                               <span class="at">nExp =</span> nExp_poi, <span class="at">reuse.pANN =</span> <span class="cn">FALSE</span>, <span class="at">sct =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>This step assigns a probability score (<code>pANN</code>) to each cell, indicating how likely it is a doublet.</li>
+</ul>
+<p><strong>Step 5: Prepare for Second Pass</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>pANN_String <span class="ot">&lt;-</span> <span class="fu">paste</span>(<span class="st">"pANN_0.25_"</span>, pk, <span class="st">"_"</span>, <span class="fu">list</span>(nExp_poi), <span class="at">sep=</span><span class="st">""</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>Creates a string name for the pANN column, which stores doublet probability scores.</li>
+</ul>
+<p><strong>Step 6: Run DoubletFinder (Second Pass - Adjusted for Homotypic Doublets)</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>dat2UMAPDoublet <span class="ot">&lt;-</span> <span class="fu">doubletFinder</span>(seuratDoublet, <span class="at">PCs =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>, <span class="at">pN =</span> <span class="fl">0.25</span>, <span class="at">pK =</span> pk, </span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>                                        <span class="at">nExp =</span> nExp_poi.adj, <span class="at">reuse.pANN =</span> pANN_String)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>The first pass identifies all doublets.</li>
+<li>The second pass refines the classification by removing homotypic doublets.</li>
+</ul>
+<p><strong>Step 7: Append doublets column in metadata</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Use this format: DF.classifications_pN_pk_nExp_poi</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Find out pk value</span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(pk)</span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Find out nExp_poi value</span></span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(nExp_poi)</span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Replace the DF.classifications_pN_pk_nExp_poi with the above values</span></span>
+<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-11"><a href="#cb34-11" aria-hidden="true" tabindex="-1"></a><span class="co"># For example, if pk is 0.24 and nExp_poi is 134, then execute the following command</span></span>
+<span id="cb34-12"><a href="#cb34-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-13"><a href="#cb34-13" aria-hidden="true" tabindex="-1"></a>classificationsCol <span class="ot">&lt;-</span> dat2UMAPDoublet<span class="sc">@</span>meta.data[<span class="st">"DF.classifications_0.25_0.24_134"</span>]</span>
+<span id="cb34-14"><a href="#cb34-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-15"><a href="#cb34-15" aria-hidden="true" tabindex="-1"></a>dat2UMAPDoublet<span class="sc">@</span>meta.data[,<span class="st">"DF_hi.lo"</span>] <span class="ot">&lt;-</span> classificationsCol[<span class="dv">1</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>Now, construct a UMAP displaying the <strong>Doublets</strong> and <strong>Singlets</strong>.</li>
+<li>You can also generate Violin plot displaying the same information.</li>
+</ul>
+</section>
+<section id="remove-doublets-and-pre-process-singlets" class="level3">
+<h3 class="anchored" data-anchor-id="remove-doublets-and-pre-process-singlets">Remove doublets and pre-process singlets</h3>
+<p>Remove the doublets and select Singlets by performing the following command:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>dat2UMAPSinglets <span class="ot">&lt;-</span> <span class="fu">subset</span>(dat2UMAPDoublet, <span class="at">subset =</span> DF_hi.lo <span class="sc">==</span> <span class="st">"Singlet"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Once the doublets are removed and singlets are selected, then re-run the following steps as performed above:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>singletsNormalisedObj <span class="ot">&lt;-</span> <span class="fu">NormalizeData</span>(<span class="at">object =</span> dat2UMAPSinglets, <span class="at">normalization.method =</span> <span class="st">"LogNormalize"</span>, <span class="at">scale.factor =</span> <span class="dv">10000</span>)</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>singletsNormalised2Obj <span class="ot">&lt;-</span> <span class="fu">FindVariableFeatures</span>(singletsNormalisedObj, <span class="at">selection.method =</span> <span class="st">"vst"</span>, <span class="at">nfeatures =</span> <span class="dv">2000</span>)</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>all.genes <span class="ot">&lt;-</span> <span class="fu">rownames</span>(singletsNormalised2Obj)</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>singletsScaledObj <span class="ot">&lt;-</span> <span class="fu">ScaleData</span>(<span class="at">object =</span> singletsNormalised2Obj, <span class="at">features =</span> all.genes)</span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>singletsScaled2Obj <span class="ot">&lt;-</span> <span class="fu">RunPCA</span>(<span class="at">object =</span> singletsScaledObj, <span class="at">features =</span> <span class="fu">VariableFeatures</span>(<span class="at">object =</span> singletsScaledObj), <span class="at">do.print =</span> <span class="cn">TRUE</span>, <span class="at">ndims.print =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="at">nfeatures.print =</span> <span class="dv">5</span>)</span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a><span class="fu">ElbowPlot</span>(singletsScaled2Obj, <span class="at">ndims =</span> <span class="dv">50</span>)</span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>seuratFindNeighbors <span class="ot">&lt;-</span> <span class="fu">FindNeighbors</span>(</span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>    singletsScaled2Obj,</span>
+<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">reduction =</span> <span class="st">"pca"</span>,</span>
+<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">dims =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">25</span>,</span>
+<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">do.plot =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">graph.name =</span> <span class="cn">NULL</span>,</span>
+<span id="cb36-13"><a href="#cb36-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">k.param =</span> <span class="dv">30</span></span>
+<span id="cb36-14"><a href="#cb36-14" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb36-15"><a href="#cb36-15" aria-hidden="true" tabindex="-1"></a>singletsFindClusters <span class="ot">&lt;-</span> <span class="fu">FindClusters</span>(<span class="at">object =</span> singletsFindNeighbors)</span>
+<span id="cb36-16"><a href="#cb36-16" aria-hidden="true" tabindex="-1"></a>singletsUMAP <span class="ot">&lt;-</span> <span class="fu">RunUMAP</span>(singletsFindClusters, <span class="at">reduction =</span> <span class="st">"pca"</span>, <span class="at">dims =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">25</span>, <span class="at">n.neighbors =</span> <span class="dv">30</span>L, <span class="at">min.dist =</span> <span class="fl">0.3</span>, <span class="at">seed.use =</span> <span class="dv">123456</span>L)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Once the pre-processing steps are finished, construct the UMAP using the <code>DimPlot</code> function.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">DimPlot</span>(singletsUMAP, <span class="at">reduction =</span> <span class="st">"umap"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 
 
 <!-- -->
@@ -972,332 +1139,510 @@ Attaching package: 'SeuratObject'</code></pre>
     }
   });
   </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb25" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Day 2"</span></span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span></span>
-<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a><span class="co">  html:</span></span>
-<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a><span class="co">    code-fold: true</span></span>
-<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a><span class="co">    code-tools: true</span></span>
-<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a><span class="co">    code-block-bg: true</span></span>
-<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a><span class="co">    code-block-border-left: "#31BAE9"</span></span>
-<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a><span class="fu"># Processing scRNAseq reads generated from Nextflow pipeline</span></span>
-<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a><span class="fu">## Recap from Day 1</span></span>
-<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Yesterday we covered:</span>
-<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>How to use Unix.</span>
-<span id="cb25-17"><a href="#cb25-17" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>How to get onto HAWK.</span>
-<span id="cb25-18"><a href="#cb25-18" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>How to fetch the Github repository and download the resources.</span>
-<span id="cb25-19"><a href="#cb25-19" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>How to execute the scrnaseq nextflow pipeline on Hawk.</span>
-<span id="cb25-20"><a href="#cb25-20" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb25-21"><a href="#cb25-21" aria-hidden="true" tabindex="-1"></a><span class="fu">## Outputs from the nextflow pipeline</span></span>
-<span id="cb25-22"><a href="#cb25-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-23"><a href="#cb25-23" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The output from the nextflow execution run is stored under <span class="in">`results/cellranger_count_1k_mouse_kidney_CNIK_3pv3`</span></span>
-<span id="cb25-24"><a href="#cb25-24" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Login to your Hawk account and access the folder:</span>
-<span id="cb25-25"><a href="#cb25-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-26"><a href="#cb25-26" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb25-27"><a href="#cb25-27" aria-hidden="true" tabindex="-1"></a><span class="in">cd /scratch/c.123456/scrnaseq-course/scrnaseq/results</span></span>
-<span id="cb25-28"><a href="#cb25-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-29"><a href="#cb25-29" aria-hidden="true" tabindex="-1"></a><span class="in">cd cellranger_count_1k_mouse_kidney_CNIK_3pv3</span></span>
-<span id="cb25-30"><a href="#cb25-30" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb25-31"><a href="#cb25-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-32"><a href="#cb25-32" aria-hidden="true" tabindex="-1"></a><span class="fu">## Downloading data for analysis in Seurat (for analysis on RStudio on local system)</span></span>
-<span id="cb25-33"><a href="#cb25-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-34"><a href="#cb25-34" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>You can skip this step if you are working on RStudio Server.</span>
-<span id="cb25-35"><a href="#cb25-35" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Once the counts are generated using nextflow pipeline, download the data onto your personal computer.</span>
-<span id="cb25-36"><a href="#cb25-36" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>For this, you will need to use Filezilla to copy the files from remote onto your local machine.</span>
-<span id="cb25-37"><a href="#cb25-37" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Follow the steps below:</span>
-<span id="cb25-38"><a href="#cb25-38" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-39"><a href="#cb25-39" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Type in the Host: hawklogin.cf.ac.uk</span>
-<span id="cb25-40"><a href="#cb25-40" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>Username: <span class="dt">&lt;</span><span class="kw">hawk</span><span class="ot"> username</span><span class="dt">&gt;</span></span>
-<span id="cb25-41"><a href="#cb25-41" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>Password: <span class="dt">&lt;</span><span class="kw">hawk</span><span class="ot"> password</span><span class="dt">&gt;</span></span>
-<span id="cb25-42"><a href="#cb25-42" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>Port: 22</span>
-<span id="cb25-43"><a href="#cb25-43" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-44"><a href="#cb25-44" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Click on <span class="in">`Quickconnect`</span></span>
-<span id="cb25-45"><a href="#cb25-45" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Navigate to the folder <span class="in">`scrnaseq-course/scrnaseq/results`</span></span>
-<span id="cb25-46"><a href="#cb25-46" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Create a folder on your local machine, called <span class="in">`scrnaseq-nextflow`</span>.</span>
-<span id="cb25-47"><a href="#cb25-47" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Create 4 folders within <span class="in">`scrnaseq-nextflow`</span> folder:</span>
-<span id="cb25-48"><a href="#cb25-48" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>bin</span>
-<span id="cb25-49"><a href="#cb25-49" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>input</span>
-<span id="cb25-50"><a href="#cb25-50" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>output</span>
-<span id="cb25-51"><a href="#cb25-51" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>resources</span>
-<span id="cb25-52"><a href="#cb25-52" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Now, Drag and Drop the files from the <span class="in">`results`</span> folder in the remote server to your <span class="in">`input`</span> folder within <span class="in">`scrnaseq-nextflow`</span> folder on your local machine.</span>
-<span id="cb25-53"><a href="#cb25-53" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Once the files are copied, these should be visible on your local machine under <span class="in">`input`</span> folder.</span>
-<span id="cb25-54"><a href="#cb25-54" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-55"><a href="#cb25-55" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/filezilla-login.png)</span>{width=100%}</span>
-<span id="cb25-56"><a href="#cb25-56" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-57"><a href="#cb25-57" aria-hidden="true" tabindex="-1"></a><span class="fu">## Processing scrnaseq data (1k_mouse_kidney_CNIK_3pv3) in Seurat </span></span>
-<span id="cb25-58"><a href="#cb25-58" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-59"><a href="#cb25-59" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Once the counts have been downloaded into the <span class="in">`input`</span> folder on your local machine, Start **RStudio** on Mac/Windows.</span>
-<span id="cb25-60"><a href="#cb25-60" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-61"><a href="#cb25-61" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/rstudio.png)</span>{width=100%}</span>
-<span id="cb25-62"><a href="#cb25-62" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-63"><a href="#cb25-63" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Click on <span class="in">`New File`</span> --&gt; <span class="in">`R Markdown...`</span></span>
-<span id="cb25-64"><a href="#cb25-64" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-65"><a href="#cb25-65" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/rstudio-newfile.png)</span>{width=100%}</span>
-<span id="cb25-66"><a href="#cb25-66" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-67"><a href="#cb25-67" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>This is will open an <span class="in">`Untiltled`</span> file on the top-left hand side.</span>
-<span id="cb25-68"><a href="#cb25-68" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-69"><a href="#cb25-69" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/rstudio-untilted-rmarkdown.png)</span>{width=100%}</span>
-<span id="cb25-70"><a href="#cb25-70" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-71"><a href="#cb25-71" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Delete lines from 7 until 29 except first 5-6 lines.</span>
-<span id="cb25-72"><a href="#cb25-72" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-73"><a href="#cb25-73" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/rmarkdown-2.png)</span>{width=100%}</span>
-<span id="cb25-74"><a href="#cb25-74" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-75"><a href="#cb25-75" aria-hidden="true" tabindex="-1"></a><span class="fu">### Load libraries</span></span>
-<span id="cb25-76"><a href="#cb25-76" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-77"><a href="#cb25-77" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Copy the line in your markdown document:</span>
-<span id="cb25-78"><a href="#cb25-78" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-81"><a href="#cb25-81" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb25-82"><a href="#cb25-82" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: true</span></span>
-<span id="cb25-83"><a href="#cb25-83" aria-hidden="true" tabindex="-1"></a><span class="co">#| code-overflow: wrap</span></span>
-<span id="cb25-84"><a href="#cb25-84" aria-hidden="true" tabindex="-1"></a><span class="co"># load libraries</span></span>
-<span id="cb25-85"><a href="#cb25-85" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(Seurat)</span>
-<span id="cb25-86"><a href="#cb25-86" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb25-87"><a href="#cb25-87" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-88"><a href="#cb25-88" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Press the green arrow key on line 7 which says **Run Current Chunk** to load the Seurat library.</span>
-<span id="cb25-89"><a href="#cb25-89" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-90"><a href="#cb25-90" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/rmarkdown-1.png)</span>{width=100%}</span>
-<span id="cb25-91"><a href="#cb25-91" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-92"><a href="#cb25-92" aria-hidden="true" tabindex="-1"></a><span class="fu">### Setup the Seurat object</span></span>
-<span id="cb25-93"><a href="#cb25-93" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-94"><a href="#cb25-94" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>We start by reading in the data. The <span class="in">`Read10X()`</span> function reads in the output of the cellranger pipeline from 10X, returning a unique molecular identified (UMI) count matrix.</span>
-<span id="cb25-95"><a href="#cb25-95" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The values in this matrix represent the number of molecules for each feature (i.e. gene; row) that are detected in each cell (column).</span>
-<span id="cb25-96"><a href="#cb25-96" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-97"><a href="#cb25-97" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb25-98"><a href="#cb25-98" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the 1k mouse kidney dataset</span></span>
-<span id="cb25-99"><a href="#cb25-99" aria-hidden="true" tabindex="-1"></a>dat2 <span class="ot">&lt;-</span> <span class="fu">Read10X</span>(<span class="at">data.dir =</span> <span class="st">"input/filtered_feature_bc_matrix/"</span>)</span>
-<span id="cb25-100"><a href="#cb25-100" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb25-101"><a href="#cb25-101" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-102"><a href="#cb25-102" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>We next use the count matrix to create a Seurat object. </span>
-<span id="cb25-103"><a href="#cb25-103" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-104"><a href="#cb25-104" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb25-105"><a href="#cb25-105" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize the Seurat object with the raw (non-normalized data).</span></span>
-<span id="cb25-106"><a href="#cb25-106" aria-hidden="true" tabindex="-1"></a>dat2Obj <span class="ot">&lt;-</span> <span class="fu">CreateSeuratObject</span>(<span class="at">counts =</span> dat2, <span class="at">project =</span> <span class="st">"1KmouseKidney"</span>, <span class="at">min.cells =</span> <span class="dv">3</span>, <span class="at">min.features =</span> <span class="dv">200</span>)</span>
-<span id="cb25-107"><a href="#cb25-107" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-108"><a href="#cb25-108" aria-hidden="true" tabindex="-1"></a>dat2Obj</span>
-<span id="cb25-109"><a href="#cb25-109" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb25-110"><a href="#cb25-110" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-111"><a href="#cb25-111" aria-hidden="true" tabindex="-1"></a><span class="fu">#### QC and filtering cells for further analysis</span></span>
-<span id="cb25-112"><a href="#cb25-112" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-113"><a href="#cb25-113" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Seurat allows you to easily explore QC metrics and filter cells based on any user-defined criteria.</span>
-<span id="cb25-114"><a href="#cb25-114" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>These includes:</span>
-<span id="cb25-115"><a href="#cb25-115" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>The number of unique genes detected in each cell.</span>
-<span id="cb25-116"><a href="#cb25-116" aria-hidden="true" tabindex="-1"></a><span class="ss">    - </span>Low-quality cells or empty droplets will often have very few genes</span>
-<span id="cb25-117"><a href="#cb25-117" aria-hidden="true" tabindex="-1"></a><span class="ss">    - </span>Cell doublets or multiplets may exhibit an aberrantly high gene count</span>
-<span id="cb25-118"><a href="#cb25-118" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>The percentage of reads that map to the mitochondrial genome.</span>
-<span id="cb25-119"><a href="#cb25-119" aria-hidden="true" tabindex="-1"></a><span class="ss">    - </span>Low-quality / dying cells often exhibit extensive mitochondrial contamination</span>
-<span id="cb25-120"><a href="#cb25-120" aria-hidden="true" tabindex="-1"></a><span class="ss">    - </span>We calculate mitochondrial QC metrics with the <span class="in">`PercentageFeatureSet()`</span> function</span>
-<span id="cb25-121"><a href="#cb25-121" aria-hidden="true" tabindex="-1"></a><span class="ss">    - </span>We use the set of all genes starting with <span class="in">`MT-`</span> or <span class="in">`mt-`</span> as a set of mitochondrial genes</span>
-<span id="cb25-122"><a href="#cb25-122" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-123"><a href="#cb25-123" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb25-124"><a href="#cb25-124" aria-hidden="true" tabindex="-1"></a><span class="co"># The [[ operator can add columns to object metadata.</span></span>
-<span id="cb25-125"><a href="#cb25-125" aria-hidden="true" tabindex="-1"></a>dat2Obj[[<span class="st">"percent.mt"</span>]] <span class="ot">&lt;-</span> <span class="fu">PercentageFeatureSet</span>(dat2Obj, <span class="at">pattern =</span> <span class="st">"^mt-"</span>)</span>
-<span id="cb25-126"><a href="#cb25-126" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb25-127"><a href="#cb25-127" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-128"><a href="#cb25-128" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>To visualize QC metrics, we use <span class="in">`VlnPlot()`</span> function.</span>
-<span id="cb25-129"><a href="#cb25-129" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-130"><a href="#cb25-130" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb25-131"><a href="#cb25-131" aria-hidden="true" tabindex="-1"></a><span class="co"># Visualize QC metrics as a violin plot</span></span>
-<span id="cb25-132"><a href="#cb25-132" aria-hidden="true" tabindex="-1"></a><span class="fu">VlnPlot</span>(dat2Obj, <span class="at">features =</span> <span class="fu">c</span>(<span class="st">"nFeature_RNA"</span>, <span class="st">"nCount_RNA"</span>, <span class="st">"percent.mt"</span>), <span class="at">ncol =</span> <span class="dv">3</span>)</span>
-<span id="cb25-133"><a href="#cb25-133" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb25-134"><a href="#cb25-134" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-135"><a href="#cb25-135" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/Violin_plot_1k_data.png)</span>{width=100%}</span>
-<span id="cb25-136"><a href="#cb25-136" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-137"><a href="#cb25-137" aria-hidden="true" tabindex="-1"></a>Try using ^MT- as pattern. What do you get?</span>
-<span id="cb25-138"><a href="#cb25-138" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-139"><a href="#cb25-139" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb25-140"><a href="#cb25-140" aria-hidden="true" tabindex="-1"></a>dat2Obj[[<span class="st">"percent.mt"</span>]] <span class="ot">&lt;-</span> <span class="fu">PercentageFeatureSet</span>(dat2Obj, <span class="at">pattern =</span> <span class="st">"^MT-"</span>)</span>
-<span id="cb25-141"><a href="#cb25-141" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb25-142"><a href="#cb25-142" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-143"><a href="#cb25-143" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Next, you can plot a FeatureScatter plot for visualising feature-feature relationships.</span>
-<span id="cb25-144"><a href="#cb25-144" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-145"><a href="#cb25-145" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb25-146"><a href="#cb25-146" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot FeatureScatter plot</span></span>
-<span id="cb25-147"><a href="#cb25-147" aria-hidden="true" tabindex="-1"></a>plot1 <span class="ot">&lt;-</span> <span class="fu">FeatureScatter</span>(dat2Obj, <span class="at">feature1 =</span> <span class="st">"nCount_RNA"</span>, <span class="at">feature2 =</span> <span class="st">"percent.mt"</span>)</span>
-<span id="cb25-148"><a href="#cb25-148" aria-hidden="true" tabindex="-1"></a>plot2 <span class="ot">&lt;-</span> <span class="fu">FeatureScatter</span>(dat2Obj, <span class="at">feature1 =</span> <span class="st">"nCount_RNA"</span>, <span class="at">feature2 =</span> <span class="st">"nFeature_RNA"</span>)</span>
-<span id="cb25-149"><a href="#cb25-149" aria-hidden="true" tabindex="-1"></a>plot1 <span class="sc">+</span> plot2</span>
-<span id="cb25-150"><a href="#cb25-150" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb25-151"><a href="#cb25-151" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-152"><a href="#cb25-152" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/FeatureScatter.png)</span>{width=100%}</span>
-<span id="cb25-153"><a href="#cb25-153" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-154"><a href="#cb25-154" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Now, we will filter cells that have unique feature counts over 9000 or less than 200</span>
-<span id="cb25-155"><a href="#cb25-155" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>We filter cells that have &gt;5% mitochondrial counts</span>
-<span id="cb25-156"><a href="#cb25-156" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-157"><a href="#cb25-157" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb25-158"><a href="#cb25-158" aria-hidden="true" tabindex="-1"></a>dat2FilteredObj <span class="ot">&lt;-</span> <span class="fu">subset</span>(dat2Obj, <span class="at">subset =</span> nFeature_RNA <span class="sc">&gt;</span> <span class="dv">200</span> <span class="sc">&amp;</span> nFeature_RNA <span class="sc">&lt;</span> <span class="dv">9000</span> <span class="sc">&amp;</span>  percent.mt <span class="sc">&lt;</span> <span class="dv">5</span>)</span>
-<span id="cb25-159"><a href="#cb25-159" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-160"><a href="#cb25-160" aria-hidden="true" tabindex="-1"></a>dat2FilteredObj</span>
-<span id="cb25-161"><a href="#cb25-161" aria-hidden="true" tabindex="-1"></a><span class="co"># An object of class Seurat </span></span>
-<span id="cb25-162"><a href="#cb25-162" aria-hidden="true" tabindex="-1"></a><span class="co"># 18321 features across 1235 samples within 1 assay </span></span>
-<span id="cb25-163"><a href="#cb25-163" aria-hidden="true" tabindex="-1"></a><span class="co"># Active assay: RNA (18321 features, 0 variable features)</span></span>
-<span id="cb25-164"><a href="#cb25-164" aria-hidden="true" tabindex="-1"></a><span class="co">#  1 layer present: counts</span></span>
-<span id="cb25-165"><a href="#cb25-165" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb25-166"><a href="#cb25-166" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-167"><a href="#cb25-167" aria-hidden="true" tabindex="-1"></a>Lets break it down:</span>
-<span id="cb25-168"><a href="#cb25-168" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`nFeature_RNA &gt; 200`</span>: Keeps cells that have more than 200 detected genes (features). This removes low-quality cells or empty droplets.</span>
-<span id="cb25-169"><a href="#cb25-169" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`Feature_RNA &lt; 9000`</span>: Removes cells with too many detected genes, which might indicate doublets (two cells captured in one droplet).</span>
-<span id="cb25-170"><a href="#cb25-170" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`percent.mt &lt; 5`</span>: Filters out cells where mitochondrial gene percentage is greater than 5%. High mitochondrial content often indicates damaged or dying cells.</span>
-<span id="cb25-171"><a href="#cb25-171" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-172"><a href="#cb25-172" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>With this command, the number of cells reduces to 1235.</span>
-<span id="cb25-173"><a href="#cb25-173" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-174"><a href="#cb25-174" aria-hidden="true" tabindex="-1"></a><span class="fu">### Normalizing the data</span></span>
-<span id="cb25-175"><a href="#cb25-175" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-176"><a href="#cb25-176" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>After removing unwanted cells from the dataset, the next step is to normalize the data.</span>
-<span id="cb25-177"><a href="#cb25-177" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>By default, we employ a global-scaling normalization method <span class="in">`LogNormalize`</span> that normalizes the feature expression measurements for each cell by the total expression, multiplies this by a scale factor (10,000 by default), and log-transforms the result.</span>
-<span id="cb25-178"><a href="#cb25-178" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Normalized values are stored in <span class="in">`dat2NormalisedObj[["RNA"]]$data`</span></span>
-<span id="cb25-179"><a href="#cb25-179" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-180"><a href="#cb25-180" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb25-181"><a href="#cb25-181" aria-hidden="true" tabindex="-1"></a>dat2NormalisedObj <span class="ot">&lt;-</span> <span class="fu">NormalizeData</span>(<span class="at">object =</span> dat2FilteredObj, <span class="at">normalization.method =</span> <span class="st">"LogNormalize"</span>, <span class="at">scale.factor =</span> <span class="dv">10000</span>)</span>
-<span id="cb25-182"><a href="#cb25-182" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb25-183"><a href="#cb25-183" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-184"><a href="#cb25-184" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The use of <span class="in">`SCTransform`</span> replaces the need to run <span class="in">`NormalizeData`</span>, <span class="in">`FindVariableFeatures`</span>, or <span class="in">`ScaleData`</span>.</span>
-<span id="cb25-185"><a href="#cb25-185" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-186"><a href="#cb25-186" aria-hidden="true" tabindex="-1"></a><span class="fu">### Identification of highly variable features (feature selection)</span></span>
-<span id="cb25-187"><a href="#cb25-187" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-188"><a href="#cb25-188" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>We next calculate a subset of features (genes) that exhibit high cell-to-cell variation in the dataset.</span>
-<span id="cb25-189"><a href="#cb25-189" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>These are the features those are highly expressed in some cells, and lowly expressed in others.</span>
-<span id="cb25-190"><a href="#cb25-190" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>It has been found <span class="co">[</span><span class="ot">Brennecke et al. Nat Methods.2013</span><span class="co">](https://www.nature.com/articles/nmeth.2645)</span> that focusing on these genes in downstream analysis helps to highlight biological signal in single-cell datasets.</span>
-<span id="cb25-191"><a href="#cb25-191" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-192"><a href="#cb25-192" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb25-193"><a href="#cb25-193" aria-hidden="true" tabindex="-1"></a>dat2Normalised2Obj <span class="ot">&lt;-</span> <span class="fu">FindVariableFeatures</span>(dat2NormalisedObj, <span class="at">selection.method =</span> <span class="st">"vst"</span>, <span class="at">nfeatures =</span> <span class="dv">2000</span>)</span>
-<span id="cb25-194"><a href="#cb25-194" aria-hidden="true" tabindex="-1"></a>top10 <span class="ot">&lt;-</span> <span class="fu">head</span>(<span class="fu">VariableFeatures</span>(dat2Normalised2Obj), <span class="dv">10</span>)</span>
-<span id="cb25-195"><a href="#cb25-195" aria-hidden="true" tabindex="-1"></a>plot3 <span class="ot">&lt;-</span> <span class="fu">VariableFeaturePlot</span>(dat2Normalised2Obj)</span>
-<span id="cb25-196"><a href="#cb25-196" aria-hidden="true" tabindex="-1"></a>plot4 <span class="ot">&lt;-</span> <span class="fu">LabelPoints</span>(<span class="at">plot =</span> plot3, <span class="at">points =</span> top10, <span class="at">repel =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb25-197"><a href="#cb25-197" aria-hidden="true" tabindex="-1"></a><span class="fu">CombinePlots</span>(<span class="at">plots =</span> <span class="fu">list</span>(plot3, plot4))</span>
-<span id="cb25-198"><a href="#cb25-198" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb25-199"><a href="#cb25-199" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-200"><a href="#cb25-200" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/VariableGenesPlot.png)</span>{width=100%}</span>
-<span id="cb25-201"><a href="#cb25-201" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-202"><a href="#cb25-202" aria-hidden="true" tabindex="-1"></a><span class="fu">### Scaling the data</span></span>
-<span id="cb25-203"><a href="#cb25-203" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-204"><a href="#cb25-204" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The <span class="in">`ScaleData`</span> function in Seurat is used to normalize and scale gene expression values across cells.</span>
-<span id="cb25-205"><a href="#cb25-205" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Additionally, it can **regress out unwanted sources of variation**, such as sequencing depth (<span class="in">`nUMI`</span>) or mitochondrial gene percentage (<span class="in">`percent.mito`</span>), helping to remove technical artifacts.</span>
-<span id="cb25-206"><a href="#cb25-206" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>By default, only variable features are scaled.</span>
-<span id="cb25-207"><a href="#cb25-207" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>But if you observe, in out script, we have used <span class="in">`rownames(dat2Normalised2Obj)`</span> which applies scaling to all genes which is stored in <span class="in">`all.genes`</span> object.</span>
-<span id="cb25-208"><a href="#cb25-208" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>This is then applied to <span class="in">`ScaleData`</span> function which uses <span class="in">`all.genes`</span> as features for scaling.</span>
-<span id="cb25-209"><a href="#cb25-209" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-210"><a href="#cb25-210" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb25-211"><a href="#cb25-211" aria-hidden="true" tabindex="-1"></a>all.genes <span class="ot">&lt;-</span> <span class="fu">rownames</span>(dat2Normalised2Obj)</span>
-<span id="cb25-212"><a href="#cb25-212" aria-hidden="true" tabindex="-1"></a>dat2ScaledObj <span class="ot">&lt;-</span> <span class="fu">ScaleData</span>(<span class="at">object =</span> dat2Normalised2Obj, <span class="at">features =</span> all.genes)</span>
-<span id="cb25-213"><a href="#cb25-213" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb25-214"><a href="#cb25-214" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-215"><a href="#cb25-215" aria-hidden="true" tabindex="-1"></a><span class="fu">#### How can I remove unwanted sources of variation ?</span></span>
-<span id="cb25-216"><a href="#cb25-216" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-217"><a href="#cb25-217" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>To remove unwanted sources of variation from a single-cell dataset, such as "percent.mt", use "vars.to.regress" to include these:</span>
-<span id="cb25-218"><a href="#cb25-218" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-219"><a href="#cb25-219" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb25-220"><a href="#cb25-220" aria-hidden="true" tabindex="-1"></a>dat2ScaledObj <span class="ot">&lt;-</span> <span class="fu">ScaleData</span>(<span class="at">object =</span> dat2Normalised2Obj, <span class="at">features =</span> all.genes, <span class="at">vars.to.regress =</span> <span class="st">"percent.mt"</span>)</span>
-<span id="cb25-221"><a href="#cb25-221" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb25-222"><a href="#cb25-222" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-223"><a href="#cb25-223" aria-hidden="true" tabindex="-1"></a><span class="fu">### Perform linear dimensional reduction</span></span>
-<span id="cb25-224"><a href="#cb25-224" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-225"><a href="#cb25-225" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Next we perform PCA on the scaled data.</span>
-<span id="cb25-226"><a href="#cb25-226" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>By default, only the previously determined variable features are used as input, but can be defined using <span class="in">`features`</span> argument if you wish to choose a different subset.</span>
-<span id="cb25-227"><a href="#cb25-227" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-228"><a href="#cb25-228" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb25-229"><a href="#cb25-229" aria-hidden="true" tabindex="-1"></a>dat2Scaled2Obj <span class="ot">&lt;-</span> <span class="fu">RunPCA</span>(<span class="at">object =</span> dat2ScaledObj, <span class="at">features =</span> <span class="fu">VariableFeatures</span>(<span class="at">object =</span> dat2ScaledObj), <span class="at">do.print =</span> <span class="cn">TRUE</span>, <span class="at">ndims.print =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="at">nfeatures.print =</span> <span class="dv">5</span>)</span>
-<span id="cb25-230"><a href="#cb25-230" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb25-231"><a href="#cb25-231" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-232"><a href="#cb25-232" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>This command uses only the highly variable genes (<span class="in">`VariableFeatures(object = dat2ScaledObj)`</span>) instead of all genes to reduce noise and improve clustering.</span>
-<span id="cb25-233"><a href="#cb25-233" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`do.print = TRUE`</span> prints the top genes contributing to each principal component (PC).</span>
-<span id="cb25-234"><a href="#cb25-234" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`pcs.print = 1:5`</span> displays the results for PC1 to PC5 (i.e., the first five principal components).</span>
-<span id="cb25-235"><a href="#cb25-235" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>PC1 (Principal Component 1) is the most important axes of variation.</span>
-<span id="cb25-236"><a href="#cb25-236" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>PC2, PC3, PC4, etc. explain additional variation in the data.</span>
-<span id="cb25-237"><a href="#cb25-237" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Top Positive Genes **(e.g., Ldb2, Ebf1, Prkg1, Meis2)** are more highly expressed in one subset of cells.</span>
-<span id="cb25-238"><a href="#cb25-238" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Top Negative Genes **(e.g., Slc27a2, Keg1, Sugct)** are more highly expressed in another subset.</span>
-<span id="cb25-239"><a href="#cb25-239" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>PC1 may capture a major biological signal, such as cell type differences.</span>
-<span id="cb25-240"><a href="#cb25-240" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>If PC2 separates a different cell population, it might represent a different biological process, like a cell cycle state or differentiation.</span>
-<span id="cb25-241"><a href="#cb25-241" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-242"><a href="#cb25-242" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`DimHeatmap()`</span> allows for easy exploration of the primary sources of heterogeneity in a dataset, and can be useful when trying to decide which PCs to include for further downstream analyses.</span>
-<span id="cb25-243"><a href="#cb25-243" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-244"><a href="#cb25-244" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb25-245"><a href="#cb25-245" aria-hidden="true" tabindex="-1"></a><span class="fu">DimHeatmap</span>(</span>
-<span id="cb25-246"><a href="#cb25-246" aria-hidden="true" tabindex="-1"></a>    <span class="at">object =</span> dat2Scaled2Obj, </span>
-<span id="cb25-247"><a href="#cb25-247" aria-hidden="true" tabindex="-1"></a>    <span class="at">dims =</span> <span class="dv">1</span>, </span>
-<span id="cb25-248"><a href="#cb25-248" aria-hidden="true" tabindex="-1"></a>    <span class="at">balanced =</span> <span class="cn">TRUE</span></span>
-<span id="cb25-249"><a href="#cb25-249" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb25-250"><a href="#cb25-250" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb25-251"><a href="#cb25-251" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-252"><a href="#cb25-252" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/PC1_dimheatmap.png)</span>{width=100%}</span>
-<span id="cb25-253"><a href="#cb25-253" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-254"><a href="#cb25-254" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Now, use dims 1 to 15 to plot 15 PCs to observe which PCs contribute to sources of variation in the dataset.</span>
-<span id="cb25-255"><a href="#cb25-255" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-256"><a href="#cb25-256" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb25-257"><a href="#cb25-257" aria-hidden="true" tabindex="-1"></a><span class="fu">DimHeatmap</span>(</span>
-<span id="cb25-258"><a href="#cb25-258" aria-hidden="true" tabindex="-1"></a>    <span class="at">object =</span> dat2Scaled2Obj, </span>
-<span id="cb25-259"><a href="#cb25-259" aria-hidden="true" tabindex="-1"></a>    <span class="at">dims =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">15</span>, </span>
-<span id="cb25-260"><a href="#cb25-260" aria-hidden="true" tabindex="-1"></a>    <span class="at">balanced =</span> <span class="cn">TRUE</span></span>
-<span id="cb25-261"><a href="#cb25-261" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb25-262"><a href="#cb25-262" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb25-263"><a href="#cb25-263" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-264"><a href="#cb25-264" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/PC1-15_dimheatmap.png)</span>{width=100%}</span>
-<span id="cb25-265"><a href="#cb25-265" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-266"><a href="#cb25-266" aria-hidden="true" tabindex="-1"></a><span class="fu">### Determining dimensionality</span></span>
-<span id="cb25-267"><a href="#cb25-267" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-268"><a href="#cb25-268" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>After running PCA using <span class="in">`RunPCA()`</span>, you need to determine how many PCs to retain for clustering and downstream analysis.</span>
-<span id="cb25-269"><a href="#cb25-269" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>One common method is using the Elbow Plot.</span>
-<span id="cb25-270"><a href="#cb25-270" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The top principal components represents highest variations in the dataset.</span>
-<span id="cb25-271"><a href="#cb25-271" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>So, how many components should we choose to include? 10? 20? 100?</span>
-<span id="cb25-272"><a href="#cb25-272" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>In ‘Elbow plot’ it ranks principle components based on the percentage of variance explained by each one.</span>
-<span id="cb25-273"><a href="#cb25-273" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-274"><a href="#cb25-274" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb25-275"><a href="#cb25-275" aria-hidden="true" tabindex="-1"></a><span class="fu">ElbowPlot</span>(dat2Scaled2Obj)</span>
-<span id="cb25-276"><a href="#cb25-276" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb25-277"><a href="#cb25-277" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-278"><a href="#cb25-278" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/elbowplot.png)</span>{width=100%}</span>
-<span id="cb25-279"><a href="#cb25-279" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-280"><a href="#cb25-280" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>If we are considering going with the default settings with <span class="in">`ndims = 20`</span>, then we can clearly see that at the elbow point is at PC 11 which accounts for most variation in the dataset.</span>
-<span id="cb25-281"><a href="#cb25-281" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-282"><a href="#cb25-282" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>However, if we choose to include <span class="in">`ndims = 50`</span>, then the elbow plot changes and includes 50 PCs. </span>
-<span id="cb25-283"><a href="#cb25-283" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-284"><a href="#cb25-284" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb25-285"><a href="#cb25-285" aria-hidden="true" tabindex="-1"></a><span class="fu">ElbowPlot</span>(dat2Scaled2Obj, <span class="at">ndims =</span> <span class="dv">50</span>)</span>
-<span id="cb25-286"><a href="#cb25-286" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb25-287"><a href="#cb25-287" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-288"><a href="#cb25-288" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/elbowplot-50.png)</span>{width=100%}</span>
-<span id="cb25-289"><a href="#cb25-289" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-290"><a href="#cb25-290" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Now, this gives us a much broader picture and also shows more PCs are contributing to variation beyond PC 11.</span>
-<span id="cb25-291"><a href="#cb25-291" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>With this plot, we can keep the value between PC 21-25.</span>
-<span id="cb25-292"><a href="#cb25-292" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>In this tutorial, I have chosen PC 25 to stretch the limit and include smaller variance. But the value of 21 will also work fine. </span>
-<span id="cb25-293"><a href="#cb25-293" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-294"><a href="#cb25-294" aria-hidden="true" tabindex="-1"></a><span class="fu">### Clustering</span></span>
-<span id="cb25-295"><a href="#cb25-295" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-296"><a href="#cb25-296" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Seurat applies a graph-based clustering approach, called Shared Nearest Neighbors (SNN).</span>
-<span id="cb25-297"><a href="#cb25-297" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>How the SNN Score is Computed:</span>
-<span id="cb25-298"><a href="#cb25-298" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>If cell A’s neighbor list and cell B’s neighbor list share many cells, they are likely to be in the same cluster.</span>
-<span id="cb25-299"><a href="#cb25-299" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>The SNN score (edge weight) is higher if two cells have more shared neighbors.</span>
-<span id="cb25-300"><a href="#cb25-300" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Example:</span>
-<span id="cb25-301"><a href="#cb25-301" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Cell A’s neighbors: {B, C, D, E}</span>
-<span id="cb25-302"><a href="#cb25-302" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Cell B’s neighbors: {A, C, D, F}</span>
-<span id="cb25-303"><a href="#cb25-303" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Cell A and Cell B share: {C, D}</span>
-<span id="cb25-304"><a href="#cb25-304" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>SNN score = Number of shared neighbors / Minimum kNN list size</span>
-<span id="cb25-305"><a href="#cb25-305" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>SNN score = 2 / 4 = 0.5</span>
-<span id="cb25-306"><a href="#cb25-306" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>If two cells share many of their nearest neighbors, their SNN score is high, and they are more likely to belong to the same cluster.</span>
-<span id="cb25-307"><a href="#cb25-307" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-308"><a href="#cb25-308" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/nearest-neighbour.png)</span>{width=100%}</span>
-<span id="cb25-309"><a href="#cb25-309" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-310"><a href="#cb25-310" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>So, the first step is performed using the <span class="in">`FindNeighbors()`</span> function, and takes as input the previously defined dimensionality of the dataset (first 25 PCs).</span>
-<span id="cb25-311"><a href="#cb25-311" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>To cluster the cells, we next apply modularity optimization techniques such as the Louvain algorithm (default) or SLM to iteratively group cells together.</span>
-<span id="cb25-312"><a href="#cb25-312" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The <span class="in">`FindClusters()`</span> function implements this procedure, and contains a resolution parameter that sets the ‘granularity’ of the downstream clustering, with increased values leading to a greater number of clusters.</span>
-<span id="cb25-313"><a href="#cb25-313" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-314"><a href="#cb25-314" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-315"><a href="#cb25-315" aria-hidden="true" tabindex="-1"></a>Run the following commands:</span>
-<span id="cb25-316"><a href="#cb25-316" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-317"><a href="#cb25-317" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb25-318"><a href="#cb25-318" aria-hidden="true" tabindex="-1"></a>seuratFindNeighbors <span class="ot">&lt;-</span> <span class="fu">FindNeighbors</span>(</span>
-<span id="cb25-319"><a href="#cb25-319" aria-hidden="true" tabindex="-1"></a>    dat2Scaled2Obj,</span>
-<span id="cb25-320"><a href="#cb25-320" aria-hidden="true" tabindex="-1"></a>    <span class="at">reduction =</span> <span class="st">"pca"</span>,</span>
-<span id="cb25-321"><a href="#cb25-321" aria-hidden="true" tabindex="-1"></a>    <span class="at">dims =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">25</span>,</span>
-<span id="cb25-322"><a href="#cb25-322" aria-hidden="true" tabindex="-1"></a>    <span class="at">do.plot =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb25-323"><a href="#cb25-323" aria-hidden="true" tabindex="-1"></a>    <span class="at">graph.name =</span> <span class="cn">NULL</span>,</span>
-<span id="cb25-324"><a href="#cb25-324" aria-hidden="true" tabindex="-1"></a>    <span class="at">k.param =</span> <span class="dv">30</span></span>
-<span id="cb25-325"><a href="#cb25-325" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb25-326"><a href="#cb25-326" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-327"><a href="#cb25-327" aria-hidden="true" tabindex="-1"></a>seuratFindClusters <span class="ot">&lt;-</span> <span class="fu">FindClusters</span>(<span class="at">object =</span> seuratFindNeighbors)</span>
-<span id="cb25-328"><a href="#cb25-328" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb38" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Day 2"</span></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span></span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a><span class="co">  html:</span></span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a><span class="co">    code-fold: true</span></span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a><span class="co">    code-tools: true</span></span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a><span class="co">    code-block-bg: true</span></span>
+<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a><span class="co">    code-block-border-left: "#31BAE9"</span></span>
+<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb38-10"><a href="#cb38-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-11"><a href="#cb38-11" aria-hidden="true" tabindex="-1"></a><span class="fu"># Processing scRNAseq reads generated from Nextflow pipeline</span></span>
+<span id="cb38-12"><a href="#cb38-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-13"><a href="#cb38-13" aria-hidden="true" tabindex="-1"></a><span class="fu">## Recap from Day 1</span></span>
+<span id="cb38-14"><a href="#cb38-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-15"><a href="#cb38-15" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Yesterday we covered:</span>
+<span id="cb38-16"><a href="#cb38-16" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>How to use Unix.</span>
+<span id="cb38-17"><a href="#cb38-17" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>How to get onto HAWK.</span>
+<span id="cb38-18"><a href="#cb38-18" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>How to fetch the Github repository and download the resources.</span>
+<span id="cb38-19"><a href="#cb38-19" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>How to execute the scrnaseq nextflow pipeline on Hawk.</span>
+<span id="cb38-20"><a href="#cb38-20" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb38-21"><a href="#cb38-21" aria-hidden="true" tabindex="-1"></a><span class="fu">## Outputs from the nextflow pipeline</span></span>
+<span id="cb38-22"><a href="#cb38-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-23"><a href="#cb38-23" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The output from the nextflow execution run is stored under <span class="in">`results/cellranger_count_1k_mouse_kidney_CNIK_3pv3`</span></span>
+<span id="cb38-24"><a href="#cb38-24" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Login to your Hawk account and access the folder:</span>
+<span id="cb38-25"><a href="#cb38-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-26"><a href="#cb38-26" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb38-27"><a href="#cb38-27" aria-hidden="true" tabindex="-1"></a><span class="in">cd /scratch/c.123456/scrnaseq-course/scrnaseq/results</span></span>
+<span id="cb38-28"><a href="#cb38-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-29"><a href="#cb38-29" aria-hidden="true" tabindex="-1"></a><span class="in">cd cellranger_count_1k_mouse_kidney_CNIK_3pv3</span></span>
+<span id="cb38-30"><a href="#cb38-30" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb38-31"><a href="#cb38-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-32"><a href="#cb38-32" aria-hidden="true" tabindex="-1"></a><span class="fu">## Downloading data for analysis in Seurat (for analysis on RStudio on local system)</span></span>
+<span id="cb38-33"><a href="#cb38-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-34"><a href="#cb38-34" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>You can skip this step if you are working on RStudio Server.</span>
+<span id="cb38-35"><a href="#cb38-35" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Once the counts are generated using nextflow pipeline, download the data onto your personal computer.</span>
+<span id="cb38-36"><a href="#cb38-36" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>For this, you will need to use Filezilla to copy the files from remote onto your local machine.</span>
+<span id="cb38-37"><a href="#cb38-37" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Follow the steps below:</span>
+<span id="cb38-38"><a href="#cb38-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-39"><a href="#cb38-39" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Type in the Host: hawklogin.cf.ac.uk</span>
+<span id="cb38-40"><a href="#cb38-40" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>Username: <span class="dt">&lt;</span><span class="kw">hawk</span><span class="ot"> username</span><span class="dt">&gt;</span></span>
+<span id="cb38-41"><a href="#cb38-41" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>Password: <span class="dt">&lt;</span><span class="kw">hawk</span><span class="ot"> password</span><span class="dt">&gt;</span></span>
+<span id="cb38-42"><a href="#cb38-42" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>Port: 22</span>
+<span id="cb38-43"><a href="#cb38-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-44"><a href="#cb38-44" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Click on <span class="in">`Quickconnect`</span></span>
+<span id="cb38-45"><a href="#cb38-45" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Navigate to the folder <span class="in">`scrnaseq-course/scrnaseq/results`</span></span>
+<span id="cb38-46"><a href="#cb38-46" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Create a folder on your local machine, called <span class="in">`scrnaseq-nextflow`</span>.</span>
+<span id="cb38-47"><a href="#cb38-47" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Create 4 folders within <span class="in">`scrnaseq-nextflow`</span> folder:</span>
+<span id="cb38-48"><a href="#cb38-48" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>bin</span>
+<span id="cb38-49"><a href="#cb38-49" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>input</span>
+<span id="cb38-50"><a href="#cb38-50" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>output</span>
+<span id="cb38-51"><a href="#cb38-51" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>resources</span>
+<span id="cb38-52"><a href="#cb38-52" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Now, Drag and Drop the files from the <span class="in">`results`</span> folder in the remote server to your <span class="in">`input`</span> folder within <span class="in">`scrnaseq-nextflow`</span> folder on your local machine.</span>
+<span id="cb38-53"><a href="#cb38-53" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Once the files are copied, these should be visible on your local machine under <span class="in">`input`</span> folder.</span>
+<span id="cb38-54"><a href="#cb38-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-55"><a href="#cb38-55" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/filezilla-login.png)</span>{width=100%}</span>
+<span id="cb38-56"><a href="#cb38-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-57"><a href="#cb38-57" aria-hidden="true" tabindex="-1"></a><span class="fu">## Processing scrnaseq data (1k_mouse_kidney_CNIK_3pv3) in Seurat </span></span>
+<span id="cb38-58"><a href="#cb38-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-59"><a href="#cb38-59" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Once the counts have been downloaded into the <span class="in">`input`</span> folder on your local machine, Start **RStudio** on Mac/Windows.</span>
+<span id="cb38-60"><a href="#cb38-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-61"><a href="#cb38-61" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/rstudio.png)</span>{width=100%}</span>
+<span id="cb38-62"><a href="#cb38-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-63"><a href="#cb38-63" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Click on <span class="in">`New File`</span> --&gt; <span class="in">`R Markdown...`</span></span>
+<span id="cb38-64"><a href="#cb38-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-65"><a href="#cb38-65" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/rstudio-newfile.png)</span>{width=100%}</span>
+<span id="cb38-66"><a href="#cb38-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-67"><a href="#cb38-67" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>This is will open an <span class="in">`Untiltled`</span> file on the top-left hand side.</span>
+<span id="cb38-68"><a href="#cb38-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-69"><a href="#cb38-69" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/rstudio-untilted-rmarkdown.png)</span>{width=100%}</span>
+<span id="cb38-70"><a href="#cb38-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-71"><a href="#cb38-71" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Delete lines from 7 until 29 except first 5-6 lines.</span>
+<span id="cb38-72"><a href="#cb38-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-73"><a href="#cb38-73" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/rmarkdown-2.png)</span>{width=100%}</span>
+<span id="cb38-74"><a href="#cb38-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-75"><a href="#cb38-75" aria-hidden="true" tabindex="-1"></a><span class="fu">### Load libraries</span></span>
+<span id="cb38-76"><a href="#cb38-76" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-77"><a href="#cb38-77" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Copy the line in your markdown document:</span>
+<span id="cb38-78"><a href="#cb38-78" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-81"><a href="#cb38-81" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb38-82"><a href="#cb38-82" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: true</span></span>
+<span id="cb38-83"><a href="#cb38-83" aria-hidden="true" tabindex="-1"></a><span class="co">#| code-overflow: wrap</span></span>
+<span id="cb38-84"><a href="#cb38-84" aria-hidden="true" tabindex="-1"></a><span class="co"># load libraries</span></span>
+<span id="cb38-85"><a href="#cb38-85" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(Seurat)</span>
+<span id="cb38-86"><a href="#cb38-86" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb38-87"><a href="#cb38-87" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-88"><a href="#cb38-88" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Press the green arrow key on line 7 which says **Run Current Chunk** to load the Seurat library.</span>
+<span id="cb38-89"><a href="#cb38-89" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-90"><a href="#cb38-90" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/rmarkdown-1.png)</span>{width=100%}</span>
+<span id="cb38-91"><a href="#cb38-91" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-92"><a href="#cb38-92" aria-hidden="true" tabindex="-1"></a><span class="fu">### Setup the Seurat object</span></span>
+<span id="cb38-93"><a href="#cb38-93" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-94"><a href="#cb38-94" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>We start by reading in the data. The <span class="in">`Read10X()`</span> function reads in the output of the cellranger pipeline from 10X, returning a unique molecular identified (UMI) count matrix.</span>
+<span id="cb38-95"><a href="#cb38-95" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The values in this matrix represent the number of molecules for each feature (i.e. gene; row) that are detected in each cell (column).</span>
+<span id="cb38-96"><a href="#cb38-96" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-97"><a href="#cb38-97" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb38-98"><a href="#cb38-98" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the 1k mouse kidney dataset</span></span>
+<span id="cb38-99"><a href="#cb38-99" aria-hidden="true" tabindex="-1"></a>dat2 <span class="ot">&lt;-</span> <span class="fu">Read10X</span>(<span class="at">data.dir =</span> <span class="st">"input/filtered_feature_bc_matrix/"</span>)</span>
+<span id="cb38-100"><a href="#cb38-100" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb38-101"><a href="#cb38-101" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-102"><a href="#cb38-102" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>We next use the count matrix to create a Seurat object. </span>
+<span id="cb38-103"><a href="#cb38-103" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-104"><a href="#cb38-104" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb38-105"><a href="#cb38-105" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize the Seurat object with the raw (non-normalized data).</span></span>
+<span id="cb38-106"><a href="#cb38-106" aria-hidden="true" tabindex="-1"></a>dat2Obj <span class="ot">&lt;-</span> <span class="fu">CreateSeuratObject</span>(<span class="at">counts =</span> dat2, <span class="at">project =</span> <span class="st">"1KmouseKidney"</span>, <span class="at">min.cells =</span> <span class="dv">3</span>, <span class="at">min.features =</span> <span class="dv">200</span>)</span>
+<span id="cb38-107"><a href="#cb38-107" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-108"><a href="#cb38-108" aria-hidden="true" tabindex="-1"></a>dat2Obj</span>
+<span id="cb38-109"><a href="#cb38-109" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb38-110"><a href="#cb38-110" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-111"><a href="#cb38-111" aria-hidden="true" tabindex="-1"></a><span class="fu">#### QC and filtering cells for further analysis</span></span>
+<span id="cb38-112"><a href="#cb38-112" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-113"><a href="#cb38-113" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Seurat allows you to easily explore QC metrics and filter cells based on any user-defined criteria.</span>
+<span id="cb38-114"><a href="#cb38-114" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>These includes:</span>
+<span id="cb38-115"><a href="#cb38-115" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>The number of unique genes detected in each cell.</span>
+<span id="cb38-116"><a href="#cb38-116" aria-hidden="true" tabindex="-1"></a><span class="ss">    - </span>Low-quality cells or empty droplets will often have very few genes</span>
+<span id="cb38-117"><a href="#cb38-117" aria-hidden="true" tabindex="-1"></a><span class="ss">    - </span>Cell doublets or multiplets may exhibit an aberrantly high gene count</span>
+<span id="cb38-118"><a href="#cb38-118" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>The percentage of reads that map to the mitochondrial genome.</span>
+<span id="cb38-119"><a href="#cb38-119" aria-hidden="true" tabindex="-1"></a><span class="ss">    - </span>Low-quality / dying cells often exhibit extensive mitochondrial contamination</span>
+<span id="cb38-120"><a href="#cb38-120" aria-hidden="true" tabindex="-1"></a><span class="ss">    - </span>We calculate mitochondrial QC metrics with the <span class="in">`PercentageFeatureSet()`</span> function</span>
+<span id="cb38-121"><a href="#cb38-121" aria-hidden="true" tabindex="-1"></a><span class="ss">    - </span>We use the set of all genes starting with <span class="in">`MT-`</span> or <span class="in">`mt-`</span> as a set of mitochondrial genes</span>
+<span id="cb38-122"><a href="#cb38-122" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-123"><a href="#cb38-123" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb38-124"><a href="#cb38-124" aria-hidden="true" tabindex="-1"></a><span class="co"># The [[ operator can add columns to object metadata.</span></span>
+<span id="cb38-125"><a href="#cb38-125" aria-hidden="true" tabindex="-1"></a>dat2Obj[[<span class="st">"percent.mt"</span>]] <span class="ot">&lt;-</span> <span class="fu">PercentageFeatureSet</span>(dat2Obj, <span class="at">pattern =</span> <span class="st">"^mt-"</span>)</span>
+<span id="cb38-126"><a href="#cb38-126" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb38-127"><a href="#cb38-127" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-128"><a href="#cb38-128" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>To visualize QC metrics, we use <span class="in">`VlnPlot()`</span> function.</span>
+<span id="cb38-129"><a href="#cb38-129" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-130"><a href="#cb38-130" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb38-131"><a href="#cb38-131" aria-hidden="true" tabindex="-1"></a><span class="co"># Visualize QC metrics as a violin plot</span></span>
+<span id="cb38-132"><a href="#cb38-132" aria-hidden="true" tabindex="-1"></a><span class="fu">VlnPlot</span>(dat2Obj, <span class="at">features =</span> <span class="fu">c</span>(<span class="st">"nFeature_RNA"</span>, <span class="st">"nCount_RNA"</span>, <span class="st">"percent.mt"</span>), <span class="at">ncol =</span> <span class="dv">3</span>)</span>
+<span id="cb38-133"><a href="#cb38-133" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb38-134"><a href="#cb38-134" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-135"><a href="#cb38-135" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/Violin_plot_1k_data.png)</span>{width=100%}</span>
+<span id="cb38-136"><a href="#cb38-136" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-137"><a href="#cb38-137" aria-hidden="true" tabindex="-1"></a>Try using ^MT- as pattern. What do you get?</span>
+<span id="cb38-138"><a href="#cb38-138" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-139"><a href="#cb38-139" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb38-140"><a href="#cb38-140" aria-hidden="true" tabindex="-1"></a>dat2Obj[[<span class="st">"percent.mt"</span>]] <span class="ot">&lt;-</span> <span class="fu">PercentageFeatureSet</span>(dat2Obj, <span class="at">pattern =</span> <span class="st">"^MT-"</span>)</span>
+<span id="cb38-141"><a href="#cb38-141" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb38-142"><a href="#cb38-142" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-143"><a href="#cb38-143" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Next, you can plot a FeatureScatter plot for visualising feature-feature relationships.</span>
+<span id="cb38-144"><a href="#cb38-144" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-145"><a href="#cb38-145" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb38-146"><a href="#cb38-146" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot FeatureScatter plot</span></span>
+<span id="cb38-147"><a href="#cb38-147" aria-hidden="true" tabindex="-1"></a>plot1 <span class="ot">&lt;-</span> <span class="fu">FeatureScatter</span>(dat2Obj, <span class="at">feature1 =</span> <span class="st">"nCount_RNA"</span>, <span class="at">feature2 =</span> <span class="st">"percent.mt"</span>)</span>
+<span id="cb38-148"><a href="#cb38-148" aria-hidden="true" tabindex="-1"></a>plot2 <span class="ot">&lt;-</span> <span class="fu">FeatureScatter</span>(dat2Obj, <span class="at">feature1 =</span> <span class="st">"nCount_RNA"</span>, <span class="at">feature2 =</span> <span class="st">"nFeature_RNA"</span>)</span>
+<span id="cb38-149"><a href="#cb38-149" aria-hidden="true" tabindex="-1"></a>plot1 <span class="sc">+</span> plot2</span>
+<span id="cb38-150"><a href="#cb38-150" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb38-151"><a href="#cb38-151" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-152"><a href="#cb38-152" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/FeatureScatter.png)</span>{width=100%}</span>
+<span id="cb38-153"><a href="#cb38-153" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-154"><a href="#cb38-154" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Now, we will filter cells that have unique feature counts over 9000 or less than 200</span>
+<span id="cb38-155"><a href="#cb38-155" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>We filter cells that have &gt;5% mitochondrial counts</span>
+<span id="cb38-156"><a href="#cb38-156" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-157"><a href="#cb38-157" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb38-158"><a href="#cb38-158" aria-hidden="true" tabindex="-1"></a>dat2FilteredObj <span class="ot">&lt;-</span> <span class="fu">subset</span>(dat2Obj, <span class="at">subset =</span> nFeature_RNA <span class="sc">&gt;</span> <span class="dv">200</span> <span class="sc">&amp;</span> nFeature_RNA <span class="sc">&lt;</span> <span class="dv">9000</span> <span class="sc">&amp;</span>  percent.mt <span class="sc">&lt;</span> <span class="dv">5</span>)</span>
+<span id="cb38-159"><a href="#cb38-159" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-160"><a href="#cb38-160" aria-hidden="true" tabindex="-1"></a>dat2FilteredObj</span>
+<span id="cb38-161"><a href="#cb38-161" aria-hidden="true" tabindex="-1"></a><span class="co"># An object of class Seurat </span></span>
+<span id="cb38-162"><a href="#cb38-162" aria-hidden="true" tabindex="-1"></a><span class="co"># 18321 features across 1235 samples within 1 assay </span></span>
+<span id="cb38-163"><a href="#cb38-163" aria-hidden="true" tabindex="-1"></a><span class="co"># Active assay: RNA (18321 features, 0 variable features)</span></span>
+<span id="cb38-164"><a href="#cb38-164" aria-hidden="true" tabindex="-1"></a><span class="co">#  1 layer present: counts</span></span>
+<span id="cb38-165"><a href="#cb38-165" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb38-166"><a href="#cb38-166" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-167"><a href="#cb38-167" aria-hidden="true" tabindex="-1"></a>Lets break it down:</span>
+<span id="cb38-168"><a href="#cb38-168" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`nFeature_RNA &gt; 200`</span>: Keeps cells that have more than 200 detected genes (features). This removes low-quality cells or empty droplets.</span>
+<span id="cb38-169"><a href="#cb38-169" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`Feature_RNA &lt; 9000`</span>: Removes cells with too many detected genes, which might indicate doublets (two cells captured in one droplet).</span>
+<span id="cb38-170"><a href="#cb38-170" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`percent.mt &lt; 5`</span>: Filters out cells where mitochondrial gene percentage is greater than 5%. High mitochondrial content often indicates damaged or dying cells.</span>
+<span id="cb38-171"><a href="#cb38-171" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-172"><a href="#cb38-172" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>With this command, the number of cells reduces to 1235.</span>
+<span id="cb38-173"><a href="#cb38-173" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-174"><a href="#cb38-174" aria-hidden="true" tabindex="-1"></a><span class="fu">### Normalizing the data</span></span>
+<span id="cb38-175"><a href="#cb38-175" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-176"><a href="#cb38-176" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>After removing unwanted cells from the dataset, the next step is to normalize the data.</span>
+<span id="cb38-177"><a href="#cb38-177" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>By default, we employ a global-scaling normalization method <span class="in">`LogNormalize`</span> that normalizes the feature expression measurements for each cell by the total expression, multiplies this by a scale factor (10,000 by default), and log-transforms the result.</span>
+<span id="cb38-178"><a href="#cb38-178" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Normalized values are stored in <span class="in">`dat2NormalisedObj[["RNA"]]$data`</span></span>
+<span id="cb38-179"><a href="#cb38-179" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-180"><a href="#cb38-180" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb38-181"><a href="#cb38-181" aria-hidden="true" tabindex="-1"></a>dat2NormalisedObj <span class="ot">&lt;-</span> <span class="fu">NormalizeData</span>(<span class="at">object =</span> dat2FilteredObj, <span class="at">normalization.method =</span> <span class="st">"LogNormalize"</span>, <span class="at">scale.factor =</span> <span class="dv">10000</span>)</span>
+<span id="cb38-182"><a href="#cb38-182" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb38-183"><a href="#cb38-183" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-184"><a href="#cb38-184" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The use of <span class="in">`SCTransform`</span> replaces the need to run <span class="in">`NormalizeData`</span>, <span class="in">`FindVariableFeatures`</span>, or <span class="in">`ScaleData`</span>.</span>
+<span id="cb38-185"><a href="#cb38-185" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-186"><a href="#cb38-186" aria-hidden="true" tabindex="-1"></a><span class="fu">### Identification of highly variable features (feature selection)</span></span>
+<span id="cb38-187"><a href="#cb38-187" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-188"><a href="#cb38-188" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>We next calculate a subset of features (genes) that exhibit high cell-to-cell variation in the dataset.</span>
+<span id="cb38-189"><a href="#cb38-189" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>These are the features those are highly expressed in some cells, and lowly expressed in others.</span>
+<span id="cb38-190"><a href="#cb38-190" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>It has been found <span class="co">[</span><span class="ot">Brennecke et al. Nat Methods.2013</span><span class="co">](https://www.nature.com/articles/nmeth.2645)</span> that focusing on these genes in downstream analysis helps to highlight biological signal in single-cell datasets.</span>
+<span id="cb38-191"><a href="#cb38-191" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-192"><a href="#cb38-192" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb38-193"><a href="#cb38-193" aria-hidden="true" tabindex="-1"></a>dat2Normalised2Obj <span class="ot">&lt;-</span> <span class="fu">FindVariableFeatures</span>(dat2NormalisedObj, <span class="at">selection.method =</span> <span class="st">"vst"</span>, <span class="at">nfeatures =</span> <span class="dv">2000</span>)</span>
+<span id="cb38-194"><a href="#cb38-194" aria-hidden="true" tabindex="-1"></a>top10 <span class="ot">&lt;-</span> <span class="fu">head</span>(<span class="fu">VariableFeatures</span>(dat2Normalised2Obj), <span class="dv">10</span>)</span>
+<span id="cb38-195"><a href="#cb38-195" aria-hidden="true" tabindex="-1"></a>plot3 <span class="ot">&lt;-</span> <span class="fu">VariableFeaturePlot</span>(dat2Normalised2Obj)</span>
+<span id="cb38-196"><a href="#cb38-196" aria-hidden="true" tabindex="-1"></a>plot4 <span class="ot">&lt;-</span> <span class="fu">LabelPoints</span>(<span class="at">plot =</span> plot3, <span class="at">points =</span> top10, <span class="at">repel =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb38-197"><a href="#cb38-197" aria-hidden="true" tabindex="-1"></a><span class="fu">CombinePlots</span>(<span class="at">plots =</span> <span class="fu">list</span>(plot3, plot4))</span>
+<span id="cb38-198"><a href="#cb38-198" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb38-199"><a href="#cb38-199" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-200"><a href="#cb38-200" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/VariableGenesPlot.png)</span>{width=100%}</span>
+<span id="cb38-201"><a href="#cb38-201" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-202"><a href="#cb38-202" aria-hidden="true" tabindex="-1"></a><span class="fu">### Scaling the data</span></span>
+<span id="cb38-203"><a href="#cb38-203" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-204"><a href="#cb38-204" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The <span class="in">`ScaleData`</span> function in Seurat is used to normalize and scale gene expression values across cells.</span>
+<span id="cb38-205"><a href="#cb38-205" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Additionally, it can **regress out unwanted sources of variation**, such as sequencing depth (<span class="in">`nUMI`</span>) or mitochondrial gene percentage (<span class="in">`percent.mito`</span>), helping to remove technical artifacts.</span>
+<span id="cb38-206"><a href="#cb38-206" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>By default, only variable features are scaled.</span>
+<span id="cb38-207"><a href="#cb38-207" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>But if you observe, in out script, we have used <span class="in">`rownames(dat2Normalised2Obj)`</span> which applies scaling to all genes which is stored in <span class="in">`all.genes`</span> object.</span>
+<span id="cb38-208"><a href="#cb38-208" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>This is then applied to <span class="in">`ScaleData`</span> function which uses <span class="in">`all.genes`</span> as features for scaling.</span>
+<span id="cb38-209"><a href="#cb38-209" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-210"><a href="#cb38-210" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb38-211"><a href="#cb38-211" aria-hidden="true" tabindex="-1"></a>all.genes <span class="ot">&lt;-</span> <span class="fu">rownames</span>(dat2Normalised2Obj)</span>
+<span id="cb38-212"><a href="#cb38-212" aria-hidden="true" tabindex="-1"></a>dat2ScaledObj <span class="ot">&lt;-</span> <span class="fu">ScaleData</span>(<span class="at">object =</span> dat2Normalised2Obj, <span class="at">features =</span> all.genes)</span>
+<span id="cb38-213"><a href="#cb38-213" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb38-214"><a href="#cb38-214" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-215"><a href="#cb38-215" aria-hidden="true" tabindex="-1"></a><span class="fu">#### How can I remove unwanted sources of variation ?</span></span>
+<span id="cb38-216"><a href="#cb38-216" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-217"><a href="#cb38-217" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>To remove unwanted sources of variation from a single-cell dataset, such as "percent.mt", use "vars.to.regress" to include these:</span>
+<span id="cb38-218"><a href="#cb38-218" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-219"><a href="#cb38-219" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb38-220"><a href="#cb38-220" aria-hidden="true" tabindex="-1"></a>dat2ScaledObj <span class="ot">&lt;-</span> <span class="fu">ScaleData</span>(<span class="at">object =</span> dat2Normalised2Obj, <span class="at">features =</span> all.genes, <span class="at">vars.to.regress =</span> <span class="st">"percent.mt"</span>)</span>
+<span id="cb38-221"><a href="#cb38-221" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb38-222"><a href="#cb38-222" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-223"><a href="#cb38-223" aria-hidden="true" tabindex="-1"></a><span class="fu">### Perform linear dimensional reduction</span></span>
+<span id="cb38-224"><a href="#cb38-224" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-225"><a href="#cb38-225" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Next we perform PCA on the scaled data.</span>
+<span id="cb38-226"><a href="#cb38-226" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>By default, only the previously determined variable features are used as input, but can be defined using <span class="in">`features`</span> argument if you wish to choose a different subset.</span>
+<span id="cb38-227"><a href="#cb38-227" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-228"><a href="#cb38-228" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb38-229"><a href="#cb38-229" aria-hidden="true" tabindex="-1"></a>dat2Scaled2Obj <span class="ot">&lt;-</span> <span class="fu">RunPCA</span>(<span class="at">object =</span> dat2ScaledObj, <span class="at">features =</span> <span class="fu">VariableFeatures</span>(<span class="at">object =</span> dat2ScaledObj), <span class="at">do.print =</span> <span class="cn">TRUE</span>, <span class="at">ndims.print =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="at">nfeatures.print =</span> <span class="dv">5</span>)</span>
+<span id="cb38-230"><a href="#cb38-230" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb38-231"><a href="#cb38-231" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-232"><a href="#cb38-232" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>This command uses only the highly variable genes (<span class="in">`VariableFeatures(object = dat2ScaledObj)`</span>) instead of all genes to reduce noise and improve clustering.</span>
+<span id="cb38-233"><a href="#cb38-233" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`do.print = TRUE`</span> prints the top genes contributing to each principal component (PC).</span>
+<span id="cb38-234"><a href="#cb38-234" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`pcs.print = 1:5`</span> displays the results for PC1 to PC5 (i.e., the first five principal components).</span>
+<span id="cb38-235"><a href="#cb38-235" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>PC1 (Principal Component 1) is the most important axes of variation.</span>
+<span id="cb38-236"><a href="#cb38-236" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>PC2, PC3, PC4, etc. explain additional variation in the data.</span>
+<span id="cb38-237"><a href="#cb38-237" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Top Positive Genes **(e.g., Ldb2, Ebf1, Prkg1, Meis2)** are more highly expressed in one subset of cells.</span>
+<span id="cb38-238"><a href="#cb38-238" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Top Negative Genes **(e.g., Slc27a2, Keg1, Sugct)** are more highly expressed in another subset.</span>
+<span id="cb38-239"><a href="#cb38-239" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>PC1 may capture a major biological signal, such as cell type differences.</span>
+<span id="cb38-240"><a href="#cb38-240" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>If PC2 separates a different cell population, it might represent a different biological process, like a cell cycle state or differentiation.</span>
+<span id="cb38-241"><a href="#cb38-241" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-242"><a href="#cb38-242" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`DimHeatmap()`</span> allows for easy exploration of the primary sources of heterogeneity in a dataset, and can be useful when trying to decide which PCs to include for further downstream analyses.</span>
+<span id="cb38-243"><a href="#cb38-243" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-244"><a href="#cb38-244" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb38-245"><a href="#cb38-245" aria-hidden="true" tabindex="-1"></a><span class="fu">DimHeatmap</span>(</span>
+<span id="cb38-246"><a href="#cb38-246" aria-hidden="true" tabindex="-1"></a>    <span class="at">object =</span> dat2Scaled2Obj, </span>
+<span id="cb38-247"><a href="#cb38-247" aria-hidden="true" tabindex="-1"></a>    <span class="at">dims =</span> <span class="dv">1</span>, </span>
+<span id="cb38-248"><a href="#cb38-248" aria-hidden="true" tabindex="-1"></a>    <span class="at">balanced =</span> <span class="cn">TRUE</span></span>
+<span id="cb38-249"><a href="#cb38-249" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb38-250"><a href="#cb38-250" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb38-251"><a href="#cb38-251" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-252"><a href="#cb38-252" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/PC1_dimheatmap.png)</span>{width=100%}</span>
+<span id="cb38-253"><a href="#cb38-253" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-254"><a href="#cb38-254" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Now, use dims 1 to 15 to plot 15 PCs to observe which PCs contribute to sources of variation in the dataset.</span>
+<span id="cb38-255"><a href="#cb38-255" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-256"><a href="#cb38-256" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb38-257"><a href="#cb38-257" aria-hidden="true" tabindex="-1"></a><span class="fu">DimHeatmap</span>(</span>
+<span id="cb38-258"><a href="#cb38-258" aria-hidden="true" tabindex="-1"></a>    <span class="at">object =</span> dat2Scaled2Obj, </span>
+<span id="cb38-259"><a href="#cb38-259" aria-hidden="true" tabindex="-1"></a>    <span class="at">dims =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">15</span>, </span>
+<span id="cb38-260"><a href="#cb38-260" aria-hidden="true" tabindex="-1"></a>    <span class="at">balanced =</span> <span class="cn">TRUE</span></span>
+<span id="cb38-261"><a href="#cb38-261" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb38-262"><a href="#cb38-262" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb38-263"><a href="#cb38-263" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-264"><a href="#cb38-264" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/PC1-15_dimheatmap.png)</span>{width=100%}</span>
+<span id="cb38-265"><a href="#cb38-265" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-266"><a href="#cb38-266" aria-hidden="true" tabindex="-1"></a><span class="fu">### Determining dimensionality</span></span>
+<span id="cb38-267"><a href="#cb38-267" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-268"><a href="#cb38-268" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>After running PCA using <span class="in">`RunPCA()`</span>, you need to determine how many PCs to retain for clustering and downstream analysis.</span>
+<span id="cb38-269"><a href="#cb38-269" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>One common method is using the Elbow Plot.</span>
+<span id="cb38-270"><a href="#cb38-270" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The top principal components represents highest variations in the dataset.</span>
+<span id="cb38-271"><a href="#cb38-271" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>So, how many components should we choose to include? 10? 20? 100?</span>
+<span id="cb38-272"><a href="#cb38-272" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>In ‘Elbow plot’ it ranks principle components based on the percentage of variance explained by each one.</span>
+<span id="cb38-273"><a href="#cb38-273" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-274"><a href="#cb38-274" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb38-275"><a href="#cb38-275" aria-hidden="true" tabindex="-1"></a><span class="fu">ElbowPlot</span>(dat2Scaled2Obj)</span>
+<span id="cb38-276"><a href="#cb38-276" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb38-277"><a href="#cb38-277" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-278"><a href="#cb38-278" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/elbowplot.png)</span>{width=100%}</span>
+<span id="cb38-279"><a href="#cb38-279" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-280"><a href="#cb38-280" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>If we are considering going with the default settings with <span class="in">`ndims = 20`</span>, then we can clearly see that at the elbow point is at PC 11 which accounts for most variation in the dataset.</span>
+<span id="cb38-281"><a href="#cb38-281" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-282"><a href="#cb38-282" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>However, if we choose to include <span class="in">`ndims = 50`</span>, then the elbow plot changes and includes 50 PCs. </span>
+<span id="cb38-283"><a href="#cb38-283" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-284"><a href="#cb38-284" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb38-285"><a href="#cb38-285" aria-hidden="true" tabindex="-1"></a><span class="fu">ElbowPlot</span>(dat2Scaled2Obj, <span class="at">ndims =</span> <span class="dv">50</span>)</span>
+<span id="cb38-286"><a href="#cb38-286" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb38-287"><a href="#cb38-287" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-288"><a href="#cb38-288" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/elbowplot-50.png)</span>{width=100%}</span>
+<span id="cb38-289"><a href="#cb38-289" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-290"><a href="#cb38-290" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Now, this gives us a much broader picture and also shows more PCs are contributing to variation beyond PC 11.</span>
+<span id="cb38-291"><a href="#cb38-291" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>With this plot, we can keep the value between PC 21-25.</span>
+<span id="cb38-292"><a href="#cb38-292" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>In this tutorial, I have chosen PC 25 to stretch the limit and include smaller variance. But the value of 21 will also work fine. </span>
+<span id="cb38-293"><a href="#cb38-293" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-294"><a href="#cb38-294" aria-hidden="true" tabindex="-1"></a><span class="fu">### Clustering</span></span>
+<span id="cb38-295"><a href="#cb38-295" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-296"><a href="#cb38-296" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Seurat applies a graph-based clustering approach, called Shared Nearest Neighbors (SNN).</span>
+<span id="cb38-297"><a href="#cb38-297" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>How the SNN Score is Computed:</span>
+<span id="cb38-298"><a href="#cb38-298" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>If cell A’s neighbor list and cell B’s neighbor list share many cells, they are likely to be in the same cluster.</span>
+<span id="cb38-299"><a href="#cb38-299" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>The SNN score (edge weight) is higher if two cells have more shared neighbors.</span>
+<span id="cb38-300"><a href="#cb38-300" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Example:</span>
+<span id="cb38-301"><a href="#cb38-301" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Cell A’s neighbors: {B, C, D, E}</span>
+<span id="cb38-302"><a href="#cb38-302" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Cell B’s neighbors: {A, C, D, F}</span>
+<span id="cb38-303"><a href="#cb38-303" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Cell A and Cell B share: {C, D}</span>
+<span id="cb38-304"><a href="#cb38-304" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>SNN score = Number of shared neighbors / Minimum kNN list size</span>
+<span id="cb38-305"><a href="#cb38-305" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>SNN score = 2 / 4 = 0.5</span>
+<span id="cb38-306"><a href="#cb38-306" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>If two cells share many of their nearest neighbors, their SNN score is high, and they are more likely to belong to the same cluster.</span>
+<span id="cb38-307"><a href="#cb38-307" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-308"><a href="#cb38-308" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/nearest-neighbour.png)</span>{width=100%}</span>
+<span id="cb38-309"><a href="#cb38-309" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-310"><a href="#cb38-310" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>So, the first step is performed using the <span class="in">`FindNeighbors()`</span> function, and takes as input the previously defined dimensionality of the dataset (first 25 PCs).</span>
+<span id="cb38-311"><a href="#cb38-311" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>To cluster the cells, we next apply modularity optimization techniques such as the Louvain algorithm (default) or SLM to iteratively group cells together.</span>
+<span id="cb38-312"><a href="#cb38-312" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The <span class="in">`FindClusters()`</span> function implements this procedure, and contains a resolution parameter that sets the ‘granularity’ of the downstream clustering, with increased values leading to a greater number of clusters.</span>
+<span id="cb38-313"><a href="#cb38-313" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-314"><a href="#cb38-314" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-315"><a href="#cb38-315" aria-hidden="true" tabindex="-1"></a>Run the following commands:</span>
+<span id="cb38-316"><a href="#cb38-316" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-317"><a href="#cb38-317" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb38-318"><a href="#cb38-318" aria-hidden="true" tabindex="-1"></a>seuratFindNeighbors <span class="ot">&lt;-</span> <span class="fu">FindNeighbors</span>(</span>
+<span id="cb38-319"><a href="#cb38-319" aria-hidden="true" tabindex="-1"></a>    dat2Scaled2Obj,</span>
+<span id="cb38-320"><a href="#cb38-320" aria-hidden="true" tabindex="-1"></a>    <span class="at">reduction =</span> <span class="st">"pca"</span>,</span>
+<span id="cb38-321"><a href="#cb38-321" aria-hidden="true" tabindex="-1"></a>    <span class="at">dims =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">25</span>,</span>
+<span id="cb38-322"><a href="#cb38-322" aria-hidden="true" tabindex="-1"></a>    <span class="at">do.plot =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb38-323"><a href="#cb38-323" aria-hidden="true" tabindex="-1"></a>    <span class="at">graph.name =</span> <span class="cn">NULL</span>,</span>
+<span id="cb38-324"><a href="#cb38-324" aria-hidden="true" tabindex="-1"></a>    <span class="at">k.param =</span> <span class="dv">30</span></span>
+<span id="cb38-325"><a href="#cb38-325" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb38-326"><a href="#cb38-326" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-327"><a href="#cb38-327" aria-hidden="true" tabindex="-1"></a>seuratFindClusters <span class="ot">&lt;-</span> <span class="fu">FindClusters</span>(<span class="at">object =</span> seuratFindNeighbors)</span>
+<span id="cb38-328"><a href="#cb38-328" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb38-329"><a href="#cb38-329" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-330"><a href="#cb38-330" aria-hidden="true" tabindex="-1"></a><span class="fu">### Non-linear dimensional reduction</span></span>
+<span id="cb38-331"><a href="#cb38-331" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-332"><a href="#cb38-332" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Seurat offers several non-linear dimensional reduction techniques, such as tSNE and UMAP, to visualize and explore these datasets.</span>
+<span id="cb38-333"><a href="#cb38-333" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The goal of these algorithms is to learn underlying structure in the dataset, in order to place similar cells together in low-dimensional space.</span>
+<span id="cb38-334"><a href="#cb38-334" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Therefore, cells that are grouped together within graph-based clusters determined above should co-localize on these dimension reduction plots.</span>
+<span id="cb38-335"><a href="#cb38-335" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-336"><a href="#cb38-336" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb38-337"><a href="#cb38-337" aria-hidden="true" tabindex="-1"></a>dat2UMAP <span class="ot">&lt;-</span> <span class="fu">RunUMAP</span>(seuratFindClusters, <span class="at">reduction =</span> <span class="st">"pca"</span>, <span class="at">dims =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">25</span>, <span class="at">n.neighbors =</span> <span class="dv">30</span>L, <span class="at">min.dist =</span> <span class="fl">0.3</span>, <span class="at">seed.use =</span> <span class="dv">123456</span>L)</span>
+<span id="cb38-338"><a href="#cb38-338" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb38-339"><a href="#cb38-339" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-340"><a href="#cb38-340" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>If you see that we have used 25 PCs and <span class="in">`n.neighbors`</span> as 30</span>
+<span id="cb38-341"><a href="#cb38-341" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`n.neighbors`</span> defines the number of nearest neighbors considered when constructing the UMAP graph.</span>
+<span id="cb38-342"><a href="#cb38-342" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Larger values capture broader structures, while smaller values focus on finer details.</span>
+<span id="cb38-343"><a href="#cb38-343" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-344"><a href="#cb38-344" aria-hidden="true" tabindex="-1"></a><span class="in">`n.neighbors`</span> Value|Effect on UMAP|When to Use?</span>
+<span id="cb38-345"><a href="#cb38-345" aria-hidden="true" tabindex="-1"></a><span class="pp">|:----:|:----------|:-----------|</span></span>
+<span id="cb38-346"><a href="#cb38-346" aria-hidden="true" tabindex="-1"></a>Low (5-15)|Captures local structure, fine details|Small datasets, cluster refinement|</span>
+<span id="cb38-347"><a href="#cb38-347" aria-hidden="true" tabindex="-1"></a>Default (30)|Balanced between local and global structure|General use case|</span>
+<span id="cb38-348"><a href="#cb38-348" aria-hidden="true" tabindex="-1"></a>High (50-100)|Preserves global relationships, reduces fragmentation|Large datasets, broader clusters|</span>
+<span id="cb38-349"><a href="#cb38-349" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-350"><a href="#cb38-350" aria-hidden="true" tabindex="-1"></a>To generate UMAP, run the following command:</span>
+<span id="cb38-351"><a href="#cb38-351" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-352"><a href="#cb38-352" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb38-353"><a href="#cb38-353" aria-hidden="true" tabindex="-1"></a><span class="fu">DimPlot</span>(dat2UMAP, <span class="at">reduction =</span> <span class="st">"umap"</span>)</span>
+<span id="cb38-354"><a href="#cb38-354" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb38-355"><a href="#cb38-355" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-356"><a href="#cb38-356" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/umap.png)</span>{width=100%}</span>
+<span id="cb38-357"><a href="#cb38-357" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-358"><a href="#cb38-358" aria-hidden="true" tabindex="-1"></a><span class="fu">### Doublet detection and removal</span></span>
+<span id="cb38-359"><a href="#cb38-359" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-360"><a href="#cb38-360" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>In scRNA-seq experiments, doublets are artifactual libraries generated from two cells.</span>
+<span id="cb38-361"><a href="#cb38-361" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Doublets are defined when two or more cells are mistakenly treated as a single cell.</span>
+<span id="cb38-362"><a href="#cb38-362" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>They typically arise due to errors in cell sorting or capture, especially in droplet-based protocols involving thousands of cells.</span>
+<span id="cb38-363"><a href="#cb38-363" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>In this workshop, we will be using <span class="in">`DoubletFinder`</span>.</span>
+<span id="cb38-364"><a href="#cb38-364" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>It is a tool used to detect and remove doublets (artificially merged cells) in scRNA-seq data.</span>
+<span id="cb38-365"><a href="#cb38-365" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Below is a step-by-step guide to doublet detection and removal in Seurat using DoubletFinder.</span>
+<span id="cb38-366"><a href="#cb38-366" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-367"><a href="#cb38-367" aria-hidden="true" tabindex="-1"></a>**Step 1: Install and Load Required Packages**</span>
+<span id="cb38-368"><a href="#cb38-368" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-369"><a href="#cb38-369" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb38-370"><a href="#cb38-370" aria-hidden="true" tabindex="-1"></a>remotes<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">'chris-mcginnis-ucsf/DoubletFinder'</span>)</span>
+<span id="cb38-371"><a href="#cb38-371" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb38-372"><a href="#cb38-372" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-373"><a href="#cb38-373" aria-hidden="true" tabindex="-1"></a>Once the package is installed, the load the library.</span>
+<span id="cb38-374"><a href="#cb38-374" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-375"><a href="#cb38-375" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb38-376"><a href="#cb38-376" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(DoubletFinder)</span>
+<span id="cb38-377"><a href="#cb38-377" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb38-378"><a href="#cb38-378" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-379"><a href="#cb38-379" aria-hidden="true" tabindex="-1"></a>**Step 2: Parameter Sweeping for pK Selection**</span>
+<span id="cb38-380"><a href="#cb38-380" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-381"><a href="#cb38-381" aria-hidden="true" tabindex="-1"></a>Sweep a range of parameters to find the optimal pK.</span>
+<span id="cb38-382"><a href="#cb38-382" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-383"><a href="#cb38-383" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb38-384"><a href="#cb38-384" aria-hidden="true" tabindex="-1"></a>sweep.res.list <span class="ot">&lt;-</span> <span class="fu">paramSweep</span>(dat2UMAP, <span class="at">PCs =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>, <span class="at">sct =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb38-385"><a href="#cb38-385" aria-hidden="true" tabindex="-1"></a>sweep.stats <span class="ot">&lt;-</span> <span class="fu">summarizeSweep</span>(sweep.res.list, <span class="at">GT =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb38-386"><a href="#cb38-386" aria-hidden="true" tabindex="-1"></a>bcmvn <span class="ot">&lt;-</span> <span class="fu">find.pK</span>(sweep.stats)</span>
+<span id="cb38-387"><a href="#cb38-387" aria-hidden="true" tabindex="-1"></a>pk <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">as.vector</span>(bcmvn<span class="sc">$</span>pK)[<span class="fu">which.max</span>(bcmvn<span class="sc">$</span>BCmetric)])</span>
+<span id="cb38-388"><a href="#cb38-388" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb38-389"><a href="#cb38-389" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-390"><a href="#cb38-390" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`paramSweep()`</span>: Tests multiple pK (parameter K) values using PCs 1 to 20.</span>
+<span id="cb38-391"><a href="#cb38-391" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`summarizeSweep()`</span>: Summarizes results into a dataframe.</span>
+<span id="cb38-392"><a href="#cb38-392" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`find.pK()`</span>: Finds the best pK using a "BCmetric" score.</span>
+<span id="cb38-393"><a href="#cb38-393" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`which.max(bcmvn$BCmetric)`</span>: Selects the pK value with the highest BCmetric, as this gives the best separation between doublets and singlets.</span>
+<span id="cb38-394"><a href="#cb38-394" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-395"><a href="#cb38-395" aria-hidden="true" tabindex="-1"></a>**Why do we need pK?**</span>
+<span id="cb38-396"><a href="#cb38-396" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-397"><a href="#cb38-397" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`pK`</span> is a clustering resolution parameter that affects doublet detection.</span>
+<span id="cb38-398"><a href="#cb38-398" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>A higher BCmetric means better performance of a given pK.</span>
+<span id="cb38-399"><a href="#cb38-399" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-400"><a href="#cb38-400" aria-hidden="true" tabindex="-1"></a>**Step 3: Estimate the Expected Number of Doublets**</span>
+<span id="cb38-401"><a href="#cb38-401" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-402"><a href="#cb38-402" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb38-403"><a href="#cb38-403" aria-hidden="true" tabindex="-1"></a>annotations <span class="ot">&lt;-</span> dat2UMAP<span class="sc">@</span>active.ident</span>
+<span id="cb38-404"><a href="#cb38-404" aria-hidden="true" tabindex="-1"></a>homotypic.prop <span class="ot">&lt;-</span> <span class="fu">modelHomotypic</span>(annotations)</span>
+<span id="cb38-405"><a href="#cb38-405" aria-hidden="true" tabindex="-1"></a>nExp_poi <span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fl">0.076</span> <span class="sc">*</span> <span class="fu">length</span>(dat2UMAP<span class="sc">@</span>active.ident))</span>
+<span id="cb38-406"><a href="#cb38-406" aria-hidden="true" tabindex="-1"></a>nExp_poi.adj <span class="ot">&lt;-</span> <span class="fu">round</span>(nExp_poi <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> homotypic.prop))</span>
+<span id="cb38-407"><a href="#cb38-407" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb38-408"><a href="#cb38-408" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-409"><a href="#cb38-409" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`modelHomotypic(annotations)`</span>: Estimates homotypic doublets (cells of the same type that are mistakenly identified as a doublet).</span>
+<span id="cb38-410"><a href="#cb38-410" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`nExp_poi &lt;- round(0.076 * length(p1tumorFilteredObj@active.ident))`</span>:</span>
+<span id="cb38-411"><a href="#cb38-411" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Uses 10X Genomics’ doublet rate formula: ~7.6% (0.076) × number of cells.</span>
+<span id="cb38-412"><a href="#cb38-412" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>This gives the expected number of doublets (<span class="in">`nExp_poi`</span>) in the dataset.</span>
+<span id="cb38-413"><a href="#cb38-413" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`nExp_poi.adj &lt;- round(nExp_poi * (1 - homotypic.prop))`</span></span>
+<span id="cb38-414"><a href="#cb38-414" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Adjusts for homotypic doublets to avoid over-filtering.</span>
+<span id="cb38-415"><a href="#cb38-415" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-416"><a href="#cb38-416" aria-hidden="true" tabindex="-1"></a>**Why adjust for homotypic proportion?**</span>
+<span id="cb38-417"><a href="#cb38-417" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-418"><a href="#cb38-418" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>If cells in a cluster are mostly from the same cell type, they might be misclassified as doublets.</span>
+<span id="cb38-419"><a href="#cb38-419" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>This adjustment prevents over-filtering of true biological clusters.</span>
+<span id="cb38-420"><a href="#cb38-420" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-421"><a href="#cb38-421" aria-hidden="true" tabindex="-1"></a>**Step 4: Run DoubletFinder (First Pass)**</span>
+<span id="cb38-422"><a href="#cb38-422" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-423"><a href="#cb38-423" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb38-424"><a href="#cb38-424" aria-hidden="true" tabindex="-1"></a>seuratDoublet <span class="ot">&lt;-</span> <span class="fu">doubletFinder</span>(dat2UMAP, <span class="at">PCs =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>, <span class="at">pN =</span> <span class="fl">0.25</span>, <span class="at">pK =</span> pk, </span>
+<span id="cb38-425"><a href="#cb38-425" aria-hidden="true" tabindex="-1"></a>                               <span class="at">nExp =</span> nExp_poi, <span class="at">reuse.pANN =</span> <span class="cn">FALSE</span>, <span class="at">sct =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb38-426"><a href="#cb38-426" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb38-427"><a href="#cb38-427" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-428"><a href="#cb38-428" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>This step assigns a probability score (<span class="in">`pANN`</span>) to each cell, indicating how likely it is a doublet.</span>
+<span id="cb38-429"><a href="#cb38-429" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-430"><a href="#cb38-430" aria-hidden="true" tabindex="-1"></a>**Step 5: Prepare for Second Pass**</span>
+<span id="cb38-431"><a href="#cb38-431" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-432"><a href="#cb38-432" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-433"><a href="#cb38-433" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb38-434"><a href="#cb38-434" aria-hidden="true" tabindex="-1"></a>pANN_String <span class="ot">&lt;-</span> <span class="fu">paste</span>(<span class="st">"pANN_0.25_"</span>, pk, <span class="st">"_"</span>, <span class="fu">list</span>(nExp_poi), <span class="at">sep=</span><span class="st">""</span>)</span>
+<span id="cb38-435"><a href="#cb38-435" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb38-436"><a href="#cb38-436" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-437"><a href="#cb38-437" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Creates a string name for the pANN column, which stores doublet probability scores.</span>
+<span id="cb38-438"><a href="#cb38-438" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-439"><a href="#cb38-439" aria-hidden="true" tabindex="-1"></a>**Step 6: Run DoubletFinder (Second Pass - Adjusted for Homotypic Doublets)**</span>
+<span id="cb38-440"><a href="#cb38-440" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-441"><a href="#cb38-441" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb38-442"><a href="#cb38-442" aria-hidden="true" tabindex="-1"></a>dat2UMAPDoublet <span class="ot">&lt;-</span> <span class="fu">doubletFinder</span>(seuratDoublet, <span class="at">PCs =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>, <span class="at">pN =</span> <span class="fl">0.25</span>, <span class="at">pK =</span> pk, </span>
+<span id="cb38-443"><a href="#cb38-443" aria-hidden="true" tabindex="-1"></a>                                        <span class="at">nExp =</span> nExp_poi.adj, <span class="at">reuse.pANN =</span> pANN_String)</span>
+<span id="cb38-444"><a href="#cb38-444" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb38-445"><a href="#cb38-445" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-446"><a href="#cb38-446" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The first pass identifies all doublets.</span>
+<span id="cb38-447"><a href="#cb38-447" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The second pass refines the classification by removing homotypic doublets.</span>
+<span id="cb38-448"><a href="#cb38-448" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-449"><a href="#cb38-449" aria-hidden="true" tabindex="-1"></a>**Step 7: Append doublets column in metadata**</span>
+<span id="cb38-450"><a href="#cb38-450" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-451"><a href="#cb38-451" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb38-452"><a href="#cb38-452" aria-hidden="true" tabindex="-1"></a><span class="co"># Use this format: DF.classifications_pN_pk_nExp_poi</span></span>
+<span id="cb38-453"><a href="#cb38-453" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-454"><a href="#cb38-454" aria-hidden="true" tabindex="-1"></a><span class="co"># Find out pk value</span></span>
+<span id="cb38-455"><a href="#cb38-455" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(pk)</span>
+<span id="cb38-456"><a href="#cb38-456" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-457"><a href="#cb38-457" aria-hidden="true" tabindex="-1"></a><span class="co"># Find out nExp_poi value</span></span>
+<span id="cb38-458"><a href="#cb38-458" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(nExp_poi)</span>
+<span id="cb38-459"><a href="#cb38-459" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-460"><a href="#cb38-460" aria-hidden="true" tabindex="-1"></a><span class="co"># Replace the DF.classifications_pN_pk_nExp_poi with the above values</span></span>
+<span id="cb38-461"><a href="#cb38-461" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-462"><a href="#cb38-462" aria-hidden="true" tabindex="-1"></a><span class="co"># For example, if pk is 0.24 and nExp_poi is 134, then execute the following command</span></span>
+<span id="cb38-463"><a href="#cb38-463" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-464"><a href="#cb38-464" aria-hidden="true" tabindex="-1"></a>classificationsCol <span class="ot">&lt;-</span> dat2UMAPDoublet<span class="sc">@</span>meta.data[<span class="st">"DF.classifications_0.25_0.24_134"</span>]</span>
+<span id="cb38-465"><a href="#cb38-465" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-466"><a href="#cb38-466" aria-hidden="true" tabindex="-1"></a>dat2UMAPDoublet<span class="sc">@</span>meta.data[,<span class="st">"DF_hi.lo"</span>] <span class="ot">&lt;-</span> classificationsCol[<span class="dv">1</span>]</span>
+<span id="cb38-467"><a href="#cb38-467" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-468"><a href="#cb38-468" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb38-469"><a href="#cb38-469" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-470"><a href="#cb38-470" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Now, construct a UMAP displaying the **Doublets** and **Singlets**.</span>
+<span id="cb38-471"><a href="#cb38-471" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>You can also generate Violin plot displaying the same information. </span>
+<span id="cb38-472"><a href="#cb38-472" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-473"><a href="#cb38-473" aria-hidden="true" tabindex="-1"></a><span class="fu">### Remove doublets and pre-process singlets</span></span>
+<span id="cb38-474"><a href="#cb38-474" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-475"><a href="#cb38-475" aria-hidden="true" tabindex="-1"></a>Remove the doublets and select Singlets by performing the following command:</span>
+<span id="cb38-476"><a href="#cb38-476" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-477"><a href="#cb38-477" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb38-478"><a href="#cb38-478" aria-hidden="true" tabindex="-1"></a>dat2UMAPSinglets <span class="ot">&lt;-</span> <span class="fu">subset</span>(dat2UMAPDoublet, <span class="at">subset =</span> DF_hi.lo <span class="sc">==</span> <span class="st">"Singlet"</span>)</span>
+<span id="cb38-479"><a href="#cb38-479" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb38-480"><a href="#cb38-480" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-481"><a href="#cb38-481" aria-hidden="true" tabindex="-1"></a>Once the doublets are removed and singlets are selected, then re-run the following steps as performed above:</span>
+<span id="cb38-482"><a href="#cb38-482" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-483"><a href="#cb38-483" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb38-484"><a href="#cb38-484" aria-hidden="true" tabindex="-1"></a>singletsNormalisedObj <span class="ot">&lt;-</span> <span class="fu">NormalizeData</span>(<span class="at">object =</span> dat2UMAPSinglets, <span class="at">normalization.method =</span> <span class="st">"LogNormalize"</span>, <span class="at">scale.factor =</span> <span class="dv">10000</span>)</span>
+<span id="cb38-485"><a href="#cb38-485" aria-hidden="true" tabindex="-1"></a>singletsNormalised2Obj <span class="ot">&lt;-</span> <span class="fu">FindVariableFeatures</span>(singletsNormalisedObj, <span class="at">selection.method =</span> <span class="st">"vst"</span>, <span class="at">nfeatures =</span> <span class="dv">2000</span>)</span>
+<span id="cb38-486"><a href="#cb38-486" aria-hidden="true" tabindex="-1"></a>all.genes <span class="ot">&lt;-</span> <span class="fu">rownames</span>(singletsNormalised2Obj)</span>
+<span id="cb38-487"><a href="#cb38-487" aria-hidden="true" tabindex="-1"></a>singletsScaledObj <span class="ot">&lt;-</span> <span class="fu">ScaleData</span>(<span class="at">object =</span> singletsNormalised2Obj, <span class="at">features =</span> all.genes)</span>
+<span id="cb38-488"><a href="#cb38-488" aria-hidden="true" tabindex="-1"></a>singletsScaled2Obj <span class="ot">&lt;-</span> <span class="fu">RunPCA</span>(<span class="at">object =</span> singletsScaledObj, <span class="at">features =</span> <span class="fu">VariableFeatures</span>(<span class="at">object =</span> singletsScaledObj), <span class="at">do.print =</span> <span class="cn">TRUE</span>, <span class="at">ndims.print =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="at">nfeatures.print =</span> <span class="dv">5</span>)</span>
+<span id="cb38-489"><a href="#cb38-489" aria-hidden="true" tabindex="-1"></a><span class="fu">ElbowPlot</span>(singletsScaled2Obj, <span class="at">ndims =</span> <span class="dv">50</span>)</span>
+<span id="cb38-490"><a href="#cb38-490" aria-hidden="true" tabindex="-1"></a>seuratFindNeighbors <span class="ot">&lt;-</span> <span class="fu">FindNeighbors</span>(</span>
+<span id="cb38-491"><a href="#cb38-491" aria-hidden="true" tabindex="-1"></a>    singletsScaled2Obj,</span>
+<span id="cb38-492"><a href="#cb38-492" aria-hidden="true" tabindex="-1"></a>    <span class="at">reduction =</span> <span class="st">"pca"</span>,</span>
+<span id="cb38-493"><a href="#cb38-493" aria-hidden="true" tabindex="-1"></a>    <span class="at">dims =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">25</span>,</span>
+<span id="cb38-494"><a href="#cb38-494" aria-hidden="true" tabindex="-1"></a>    <span class="at">do.plot =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb38-495"><a href="#cb38-495" aria-hidden="true" tabindex="-1"></a>    <span class="at">graph.name =</span> <span class="cn">NULL</span>,</span>
+<span id="cb38-496"><a href="#cb38-496" aria-hidden="true" tabindex="-1"></a>    <span class="at">k.param =</span> <span class="dv">30</span></span>
+<span id="cb38-497"><a href="#cb38-497" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb38-498"><a href="#cb38-498" aria-hidden="true" tabindex="-1"></a>singletsFindClusters <span class="ot">&lt;-</span> <span class="fu">FindClusters</span>(<span class="at">object =</span> singletsFindNeighbors)</span>
+<span id="cb38-499"><a href="#cb38-499" aria-hidden="true" tabindex="-1"></a>singletsUMAP <span class="ot">&lt;-</span> <span class="fu">RunUMAP</span>(singletsFindClusters, <span class="at">reduction =</span> <span class="st">"pca"</span>, <span class="at">dims =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">25</span>, <span class="at">n.neighbors =</span> <span class="dv">30</span>L, <span class="at">min.dist =</span> <span class="fl">0.3</span>, <span class="at">seed.use =</span> <span class="dv">123456</span>L)</span>
+<span id="cb38-500"><a href="#cb38-500" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb38-501"><a href="#cb38-501" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-502"><a href="#cb38-502" aria-hidden="true" tabindex="-1"></a>Once the pre-processing steps are finished, construct the UMAP using the <span class="in">`DimPlot`</span> function.</span>
+<span id="cb38-503"><a href="#cb38-503" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-504"><a href="#cb38-504" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb38-505"><a href="#cb38-505" aria-hidden="true" tabindex="-1"></a><span class="fu">DimPlot</span>(singletsUMAP, <span class="at">reduction =</span> <span class="st">"umap"</span>)</span>
+<span id="cb38-506"><a href="#cb38-506" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 </code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
