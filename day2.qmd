@@ -325,3 +325,181 @@ seuratFindNeighbors <- FindNeighbors(
 seuratFindClusters <- FindClusters(object = seuratFindNeighbors)
 ```
 
+### Non-linear dimensional reduction
+
+- Seurat offers several non-linear dimensional reduction techniques, such as tSNE and UMAP, to visualize and explore these datasets.
+- The goal of these algorithms is to learn underlying structure in the dataset, in order to place similar cells together in low-dimensional space.
+- Therefore, cells that are grouped together within graph-based clusters determined above should co-localize on these dimension reduction plots.
+
+```r
+dat2UMAP <- RunUMAP(seuratFindClusters, reduction = "pca", dims = 1:25, n.neighbors = 30L, min.dist = 0.3, seed.use = 123456L)
+```
+
+- If you see that we have used 25 PCs and `n.neighbors` as 30
+- `n.neighbors` defines the number of nearest neighbors considered when constructing the UMAP graph.
+- Larger values capture broader structures, while smaller values focus on finer details.
+
+`n.neighbors` Value|Effect on UMAP|When to Use?
+|:----:|:----------|:-----------|
+Low (5-15)|Captures local structure, fine details|Small datasets, cluster refinement|
+Default (30)|Balanced between local and global structure|General use case|
+High (50-100)|Preserves global relationships, reduces fragmentation|Large datasets, broader clusters|
+
+To generate UMAP, run the following command:
+
+```r
+DimPlot(dat2UMAP, reduction = "umap")
+```
+
+![](images/umap.png){width=100%}
+
+### Doublet detection and removal
+
+- In scRNA-seq experiments, doublets are artifactual libraries generated from two cells.
+- Doublets are defined when two or more cells are mistakenly treated as a single cell.
+- They typically arise due to errors in cell sorting or capture, especially in droplet-based protocols involving thousands of cells.
+- In this workshop, we will be using `DoubletFinder`.
+- It is a tool used to detect and remove doublets (artificially merged cells) in scRNA-seq data.
+- Below is a step-by-step guide to doublet detection and removal in Seurat using DoubletFinder.
+
+**Step 1: Install and Load Required Packages**
+
+```r
+remotes::install_github('chris-mcginnis-ucsf/DoubletFinder')
+```
+
+Once the package is installed, the load the library.
+
+```r
+library(DoubletFinder)
+```
+
+**Step 2: Parameter Sweeping for pK Selection**
+
+Sweep a range of parameters to find the optimal pK.
+
+```r
+sweep.res.list <- paramSweep(dat2UMAP, PCs = 1:20, sct = TRUE)
+sweep.stats <- summarizeSweep(sweep.res.list, GT = FALSE)
+bcmvn <- find.pK(sweep.stats)
+pk <- as.numeric(as.vector(bcmvn$pK)[which.max(bcmvn$BCmetric)])
+```
+
+- `paramSweep()`: Tests multiple pK (parameter K) values using PCs 1 to 20.
+- `summarizeSweep()`: Summarizes results into a dataframe.
+- `find.pK()`: Finds the best pK using a "BCmetric" score.
+- `which.max(bcmvn$BCmetric)`: Selects the pK value with the highest BCmetric, as this gives the best separation between doublets and singlets.
+
+**Why do we need pK?**
+
+- `pK` is a clustering resolution parameter that affects doublet detection.
+- A higher BCmetric means better performance of a given pK.
+
+**Step 3: Estimate the Expected Number of Doublets**
+
+```r
+annotations <- dat2UMAP@active.ident
+homotypic.prop <- modelHomotypic(annotations)
+nExp_poi <- round(0.076 * length(dat2UMAP@active.ident))
+nExp_poi.adj <- round(nExp_poi * (1 - homotypic.prop))
+```
+
+- `modelHomotypic(annotations)`: Estimates homotypic doublets (cells of the same type that are mistakenly identified as a doublet).
+- `nExp_poi <- round(0.076 * length(p1tumorFilteredObj@active.ident))`:
+  - Uses 10X Genomics’ doublet rate formula: ~7.6% (0.076) × number of cells.
+  - This gives the expected number of doublets (`nExp_poi`) in the dataset.
+- `nExp_poi.adj <- round(nExp_poi * (1 - homotypic.prop))`
+  - Adjusts for homotypic doublets to avoid over-filtering.
+
+**Why adjust for homotypic proportion?**
+
+- If cells in a cluster are mostly from the same cell type, they might be misclassified as doublets.
+- This adjustment prevents over-filtering of true biological clusters.
+
+**Step 4: Run DoubletFinder (First Pass)**
+
+```r
+seuratDoublet <- doubletFinder(dat2UMAP, PCs = 1:20, pN = 0.25, pK = pk, 
+                               nExp = nExp_poi, reuse.pANN = FALSE, sct = TRUE)
+```
+
+- This step assigns a probability score (`pANN`) to each cell, indicating how likely it is a doublet.
+
+**Step 5: Prepare for Second Pass**
+
+
+```r
+pANN_String <- paste("pANN_0.25_", pk, "_", list(nExp_poi), sep="")
+```
+
+- Creates a string name for the pANN column, which stores doublet probability scores.
+
+**Step 6: Run DoubletFinder (Second Pass - Adjusted for Homotypic Doublets)**
+
+```r
+dat2UMAPDoublet <- doubletFinder(seuratDoublet, PCs = 1:10, pN = 0.25, pK = pk, 
+                                        nExp = nExp_poi.adj, reuse.pANN = pANN_String)
+```
+
+- The first pass identifies all doublets.
+- The second pass refines the classification by removing homotypic doublets.
+
+**Step 7: Append doublets column in metadata**
+
+```r
+# Use this format: DF.classifications_pN_pk_nExp_poi
+
+# Find out pk value
+print(pk)
+
+# Find out nExp_poi value
+print(nExp_poi)
+
+# Replace the DF.classifications_pN_pk_nExp_poi with the above values
+
+# For example, if pk is 0.24 and nExp_poi is 134, then execute the following command
+
+classificationsCol <- dat2UMAPDoublet@meta.data["DF.classifications_0.25_0.24_134"]
+
+dat2UMAPDoublet@meta.data[,"DF_hi.lo"] <- classificationsCol[1]
+
+```
+
+- Now, construct a UMAP displaying the **Doublets** and **Singlets**.
+- You can also generate Violin plot displaying the same information. 
+
+### Remove doublets and pre-process singlets
+
+Remove the doublets and select Singlets by performing the following command:
+
+```r
+dat2UMAPSinglets <- subset(dat2UMAPDoublet, subset = DF_hi.lo == "Singlet")
+```
+
+Once the doublets are removed and singlets are selected, then re-run the following steps as performed above:
+
+```r
+singletsNormalisedObj <- NormalizeData(object = dat2UMAPSinglets, normalization.method = "LogNormalize", scale.factor = 10000)
+singletsNormalised2Obj <- FindVariableFeatures(singletsNormalisedObj, selection.method = "vst", nfeatures = 2000)
+all.genes <- rownames(singletsNormalised2Obj)
+singletsScaledObj <- ScaleData(object = singletsNormalised2Obj, features = all.genes)
+singletsScaled2Obj <- RunPCA(object = singletsScaledObj, features = VariableFeatures(object = singletsScaledObj), do.print = TRUE, ndims.print = 1:5, nfeatures.print = 5)
+ElbowPlot(singletsScaled2Obj, ndims = 50)
+seuratFindNeighbors <- FindNeighbors(
+    singletsScaled2Obj,
+    reduction = "pca",
+    dims = 1:25,
+    do.plot = FALSE,
+    graph.name = NULL,
+    k.param = 30
+)
+singletsFindClusters <- FindClusters(object = singletsFindNeighbors)
+singletsUMAP <- RunUMAP(singletsFindClusters, reduction = "pca", dims = 1:25, n.neighbors = 30L, min.dist = 0.3, seed.use = 123456L)
+```
+
+Once the pre-processing steps are finished, construct the UMAP using the `DimPlot` function.
+
+```r
+DimPlot(singletsUMAP, reduction = "umap")
+```
+
