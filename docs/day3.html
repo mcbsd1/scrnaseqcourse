@@ -157,10 +157,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#day-3---analysing-multi-sample-scrnaseq-data-in-seurat" id="toc-day-3---analysing-multi-sample-scrnaseq-data-in-seurat" class="nav-link active" data-scroll-target="#day-3---analysing-multi-sample-scrnaseq-data-in-seurat">Day 3 - Analysing multi-sample scRNAseq data in Seurat</a>
-  <ul class="collapse">
-  <li><a href="#recap-from-day-2" id="toc-recap-from-day-2" class="nav-link" data-scroll-target="#recap-from-day-2">Recap from Day 2</a></li>
-  </ul></li>
+  <li><a href="#day-3---analysing-multi-sample-scrnaseq-data-in-seurat" id="toc-day-3---analysing-multi-sample-scrnaseq-data-in-seurat" class="nav-link active" data-scroll-target="#day-3---analysing-multi-sample-scrnaseq-data-in-seurat">Day 3 - Analysing multi-sample scRNAseq data in Seurat</a></li>
   </ul>
 </nav>
     </div>
@@ -188,23 +185,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="day-3---analysing-multi-sample-scrnaseq-data-in-seurat" class="level1">
 <h1>Day 3 - Analysing multi-sample scRNAseq data in Seurat</h1>
-<section id="recap-from-day-2" class="level2">
-<h2 class="anchored" data-anchor-id="recap-from-day-2">Recap from Day 2</h2>
 <ul>
-<li>How to load cellranger data in RStudio.</li>
-<li>How to process scRNAseq data in Seurat.
-<ul>
-<li>Loading and creating seurat object</li>
-<li>Generating QC metrics</li>
-<li>Filtering data</li>
-<li>Normalising data</li>
-<li>Identifying highly variable genes</li>
-<li>Scaling data</li>
-<li>Performing Principal Component Analysis</li>
-<li>Finding clusters (Clustering)</li>
-<li>Visualising clusters using UMAP</li>
-<li>Other visualisation functions to create plots for identifying differences in gene expression between clusters.</li>
-</ul></li>
 <li>Today we will cover:
 <ul>
 <li>Integrating single-cell datasets.</li>
@@ -217,7 +198,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <!-- -->
 
-</section>
 </section>
 
 </main> <!-- /main -->
@@ -684,26 +664,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu"># Day 3 - Analysing multi-sample scRNAseq data in Seurat</span></span>
 <span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="fu">## Recap from Day 2</span></span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>How to load cellranger data in RStudio.</span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>How to process scRNAseq data in Seurat.</span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Loading and creating seurat object</span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Generating QC metrics</span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Filtering data</span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Normalising data</span>
-<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Identifying highly variable genes</span>
-<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Scaling data</span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Performing Principal Component Analysis</span>
-<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Finding clusters (Clustering)</span>
-<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Visualising clusters using UMAP</span>
-<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Other visualisation functions to create plots for identifying differences in gene expression between clusters.</span>
-<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Today we will cover:</span>
-<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Integrating single-cell datasets.</span>
-<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Differential Gene Expression analysis and marker selection.</span>
-<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Cell-type annotation</span>
-<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Today we will cover:</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Integrating single-cell datasets.</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Differential Gene Expression analysis and marker selection.</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Cell-type annotation</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
 

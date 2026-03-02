@@ -4,14 +4,7 @@
     "href": "day3.html",
     "title": "Day 3",
     "section": "",
-    "text": "How to load cellranger data in RStudio.\nHow to process scRNAseq data in Seurat.\n\nLoading and creating seurat object\nGenerating QC metrics\nFiltering data\nNormalising data\nIdentifying highly variable genes\nScaling data\nPerforming Principal Component Analysis\nFinding clusters (Clustering)\nVisualising clusters using UMAP\nOther visualisation functions to create plots for identifying differences in gene expression between clusters.\n\nToday we will cover:\n\nIntegrating single-cell datasets.\nDifferential Gene Expression analysis and marker selection.\nCell-type annotation"
-  },
-  {
-    "objectID": "day3.html#recap-from-day-2",
-    "href": "day3.html#recap-from-day-2",
-    "title": "Day 3",
-    "section": "",
-    "text": "How to load cellranger data in RStudio.\nHow to process scRNAseq data in Seurat.\n\nLoading and creating seurat object\nGenerating QC metrics\nFiltering data\nNormalising data\nIdentifying highly variable genes\nScaling data\nPerforming Principal Component Analysis\nFinding clusters (Clustering)\nVisualising clusters using UMAP\nOther visualisation functions to create plots for identifying differences in gene expression between clusters.\n\nToday we will cover:\n\nIntegrating single-cell datasets.\nDifferential Gene Expression analysis and marker selection.\nCell-type annotation"
+    "text": "Day 3 - Analysing multi-sample scRNAseq data in Seurat\n\nToday we will cover:\n\nIntegrating single-cell datasets.\nDifferential Gene Expression analysis and marker selection.\nCell-type annotation"
   },
   {
     "objectID": "about.html",
