@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>scrnaseqcourse</title>
+<title>Day 3 – scrnaseqcourse</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -75,7 +75,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-5b4ad623e5705c0698d39aec6f10cf02.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-e8999c1fc3281904679b8912ebc6abe1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -126,7 +126,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link active" href="./index.html" aria-current="page"> 
+    <a class="nav-link" href="./index.html"> 
 <span class="menu-text">Day 1</span></a>
   </li>  
   <li class="nav-item">
@@ -134,7 +134,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span class="menu-text">Day 2</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./day3.html"> 
+    <a class="nav-link active" href="./day3.html" aria-current="page"> 
 <span class="menu-text">Day 3</span></a>
   </li>  
   <li class="nav-item">
@@ -157,19 +157,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#day-1" id="toc-day-1" class="nav-link active" data-scroll-target="#day-1">Day 1</a>
+  <li><a href="#day-3---analysing-multi-sample-scrnaseq-data-in-seurat" id="toc-day-3---analysing-multi-sample-scrnaseq-data-in-seurat" class="nav-link active" data-scroll-target="#day-3---analysing-multi-sample-scrnaseq-data-in-seurat">Day 3 - Analysing multi-sample scRNAseq data in Seurat</a>
   <ul class="collapse">
-  <li><a href="#what-you-will-learn-on-this-course" id="toc-what-you-will-learn-on-this-course" class="nav-link" data-scroll-target="#what-you-will-learn-on-this-course">What you will learn on this course:</a></li>
-  <li><a href="#introduction-to-single-cell-rna-seq" id="toc-introduction-to-single-cell-rna-seq" class="nav-link" data-scroll-target="#introduction-to-single-cell-rna-seq">Introduction to Single-Cell RNA-seq</a></li>
-  <li><a href="#sample-preparation-protocols" id="toc-sample-preparation-protocols" class="nav-link" data-scroll-target="#sample-preparation-protocols">Sample Preparation Protocols</a></li>
-  <li><a href="#unix-configuration" id="toc-unix-configuration" class="nav-link" data-scroll-target="#unix-configuration">Unix: Configuration</a>
-  <ul class="collapse">
-  <li><a href="#unix-hardware" id="toc-unix-hardware" class="nav-link" data-scroll-target="#unix-hardware">Unix: Hardware</a></li>
-  <li><a href="#unix-kernel" id="toc-unix-kernel" class="nav-link" data-scroll-target="#unix-kernel">Unix: Kernel</a></li>
-  <li><a href="#unix-commands" id="toc-unix-commands" class="nav-link" data-scroll-target="#unix-commands">Unix: Commands</a></li>
-  <li><a href="#unix-programs" id="toc-unix-programs" class="nav-link" data-scroll-target="#unix-programs">Unix: Programs</a></li>
-  </ul></li>
-  <li><a href="#basic-unix-graphical-user-interface-gui-command-lineshell" id="toc-basic-unix-graphical-user-interface-gui-command-lineshell" class="nav-link" data-scroll-target="#basic-unix-graphical-user-interface-gui-command-lineshell">Basic Unix: Graphical User Interface (GUI) &amp; Command Line/Shell</a></li>
+  <li><a href="#recap-from-day-2" id="toc-recap-from-day-2" class="nav-link" data-scroll-target="#recap-from-day-2">Recap from Day 2</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -179,7 +169,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">scrnaseqcourse</h1>
+<div class="quarto-title-block"><div><h1 class="title">Day 3</h1><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
 </div>
 
 
@@ -196,119 +186,36 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>This is a Quarto website.</p>
-<p>To learn more about Quarto websites visit <a href="https://quarto.org/docs/websites" class="uri">https://quarto.org/docs/websites</a>.</p>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span> <span class="sc">+</span> <span class="dv">1</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] 2</code></pre>
-</div>
-</div>
-<section id="day-1" class="level1">
-<h1>Day 1</h1>
-<p>We will cover:</p>
+<section id="day-3---analysing-multi-sample-scrnaseq-data-in-seurat" class="level1">
+<h1>Day 3 - Analysing multi-sample scRNAseq data in Seurat</h1>
+<section id="recap-from-day-2" class="level2">
+<h2 class="anchored" data-anchor-id="recap-from-day-2">Recap from Day 2</h2>
 <ul>
-<li>Introduction to the course.</li>
-<li>Basic Unix.</li>
-<li>Introduction to HAWK.</li>
-<li>Basic Unix Continued.</li>
-<li>Fetching the scrnaseq nextflow pipeline.</li>
-<li>Setting up the pipeline for execution.</li>
-<li>Running the pipeline.</li>
-</ul>
-<section id="what-you-will-learn-on-this-course" class="level2">
-<h2 class="anchored" data-anchor-id="what-you-will-learn-on-this-course">What you will learn on this course:</h2>
+<li>How to load cellranger data in RStudio.</li>
+<li>How to process scRNAseq data in Seurat.
 <ul>
-<li>Basic Unix commands</li>
-<li>Working on HPC</li>
-<li>Downloading scrnaseq datasets and genome files.</li>
-<li>Setting up directory for the data processing and analysis.</li>
-<li>How to run Nextflow pipeline on HPCs.</li>
-<li>How to process 10x cellranger pipeline.</li>
-<li>How to process and analyse scrnaseq count data in R.</li>
-<li>How to visualise the analysed data and perform additional downstream analysis.</li>
-</ul>
-</section>
-<section id="introduction-to-single-cell-rna-seq" class="level2">
-<h2 class="anchored" data-anchor-id="introduction-to-single-cell-rna-seq">Introduction to Single-Cell RNA-seq</h2>
+<li>Loading and creating seurat object</li>
+<li>Generating QC metrics</li>
+<li>Filtering data</li>
+<li>Normalising data</li>
+<li>Identifying highly variable genes</li>
+<li>Scaling data</li>
+<li>Performing Principal Component Analysis</li>
+<li>Finding clusters (Clustering)</li>
+<li>Visualising clusters using UMAP</li>
+<li>Other visualisation functions to create plots for identifying differences in gene expression between clusters.</li>
+</ul></li>
+<li>Today we will cover:
 <ul>
-<li>RNA-seq allows profiling the transcripts in a sample in an efficient and cost-effective way.</li>
-<li>Part of its success is due to the fact that RNA-seq allows for an unbiased sampling of all transcripts in a sample, rather than being limited to a pre-determined set of transcripts (as in microarrays or RT-qPCR).</li>
-<li>Typically, RNA-seq has been used in samples composed of a mixture of cells, referred to as <strong>bulk RNA-seq</strong>, and has many applications.</li>
-<li>For example, it can be used to characterise expression signatures between tissues in healthy/diseased, wild-type/mutant or control/treated samples.</li>
-<li>However, with bulk RNA-seq we can only estimate the <strong>average expression level</strong> for each gene across a population of cells, without regard for the heterogeneity in gene expression across individual cells of that sample.</li>
+<li>Integrating single-cell datasets.</li>
+<li>Differential Gene Expression analysis and marker selection.</li>
+<li>Cell-type annotation</li>
+<li></li>
+</ul></li>
 </ul>
-<p><img src="images/singlecell-v.-bulk-image.jpg" class="img-fluid" style="width:100.0%"></p>
-<ul>
-<li><p>Unlike with the bulk approach, with scRNA-seq we can estimate a <strong>distribution of expression levels</strong> for each gene across a population of cells.</p></li>
-<li><p>This allows us to answer new biological questions where <strong>cell-specific changes in the transcriptome</strong> are important. For example discovering new or rare cell types, identifying differential cell composition between healthy/diseased tissues or understanding cell differentiation during development.</p></li>
-</ul>
-</section>
-<section id="sample-preparation-protocols" class="level2">
-<h2 class="anchored" data-anchor-id="sample-preparation-protocols">Sample Preparation Protocols</h2>
-<p>Broadly speaking, a typical scRNA-seq protocol consists of the following steps (illustrated in the figure below):</p>
-<ul>
-<li>Tissue dissection and cell dissociating to obtain a suspension of cells.</li>
-<li>Optionally cells may be selected</li>
-<li>Capture single cells into individual reaction containers (e.g.&nbsp;wells or oil droplets).</li>
-<li>Extracting the RNA from each cell.</li>
-<li>Reverse-transcribing the RNA to more stable cDNA.</li>
-<li>Amplifying the cDNA (either by in vitro transcription or by PCR).</li>
-<li>Preparing the sequencing library with adequate molecular adapters.</li>
-<li>Sequencing, usually with paired-end Illumina protocols.</li>
-<li>Processing the raw data to obtain a count matrix of genes-by-cells</li>
-<li>Carrying several downstream analysis (the focus of this course).</li>
-</ul>
-</section>
-<section id="unix-configuration" class="level2">
-<h2 class="anchored" data-anchor-id="unix-configuration">Unix: Configuration</h2>
-<section id="unix-hardware" class="level3">
-<h3 class="anchored" data-anchor-id="unix-hardware">Unix: Hardware</h3>
-<ul>
-<li><strong>Hardware:</strong> the physical components (the bits you can see when you take the back off a computer.</li>
-<li><strong>CPU (central processing unit):</strong> the computer chip performing the calculations.<br>
-</li>
-<li><strong>Hard drive:</strong> saved storage – your saved files.</li>
-<li><strong>RAM (random access memory):</strong> like the hard drive, it stores information. Access (reading this information) is faster than the hard drive, although information is only present whilst the compute is powered on, i.e.&nbsp;this is memory space.</li>
-</ul>
-<p><img src="images/unix-configuration.png" class="img-fluid" style="width:100.0%"></p>
-</section>
-<section id="unix-kernel" class="level3">
-<h3 class="anchored" data-anchor-id="unix-kernel">Unix: Kernel</h3>
-<ul>
-<li>The kernel sits between the command line and the hardware.<br>
-</li>
-<li>When you type a command line to the screen and hit “enter,” the kernel executes the command, allocating the appropriate time and memory to the task.</li>
-</ul>
-</section>
-<section id="unix-commands" class="level3">
-<h3 class="anchored" data-anchor-id="unix-commands">Unix: Commands</h3>
-<ul>
-<li>the commands are the bread-and-butter functions common to all Linux installations and are part of the core (minimal) install.</li>
-<li>they perform core processes such as file and job manipulations (read, write, delete files/jobs).</li>
-</ul>
-</section>
-<section id="unix-programs" class="level3">
-<h3 class="anchored" data-anchor-id="unix-programs">Unix: Programs</h3>
-<ul>
-<li>Other programs work identically to the core commands.</li>
-<li>They are different because they generally perform specialised functions, for example, mapping next-generation sequence to a genome assembly.</li>
-</ul>
-</section>
-</section>
-<section id="basic-unix-graphical-user-interface-gui-command-lineshell" class="level2">
-<h2 class="anchored" data-anchor-id="basic-unix-graphical-user-interface-gui-command-lineshell">Basic Unix: Graphical User Interface (GUI) &amp; Command Line/Shell</h2>
-<ul>
-<li>All Windows/Mac/Linux PC’s use a GUI to allow users to easily navigate and use the PC.</li>
-<li>The GUI is common to Window/Mac/Linux.<br>
-</li>
-<li>The interface permits you to access files and run commands/programs by clicking icon/apps, drag-and-drop.</li>
-</ul>
-<p>This is a shell. We can use this to type commands etc.</p>
-<p><img src="images/gui.png" class="img-fluid" style="width:100.0%"></p>
-<p>In simple terms, the window on the computer into which you type a command, is called the shell</p>
-<p><img src="images/gui1.png" class="img-fluid" style="width:100.0%"></p>
 
+
+<!-- -->
 
 </section>
 </section>
@@ -384,6 +291,57 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
         container: window.document.getElementById('quarto-embedded-source-code-modal')
       });
       clipboardModal.on('success', onCopySuccess);
+    }
+    const viewSource = window.document.getElementById('quarto-view-source') ||
+                       window.document.getElementById('quarto-code-tools-source');
+    if (viewSource) {
+      const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+      viewSource.addEventListener("click", function(e) {
+        if (sourceUrl) {
+          // rstudio viewer pane
+          if (/\bcapabilities=\b/.test(window.location)) {
+            window.open(sourceUrl);
+          } else {
+            window.location.href = sourceUrl;
+          }
+        } else {
+          const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+          modal.show();
+        }
+        return false;
+      });
+    }
+    function toggleCodeHandler(show) {
+      return function(e) {
+        const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+        for (let i=0; i<detailsSrc.length; i++) {
+          const details = detailsSrc[i].parentElement;
+          if (show) {
+            details.open = true;
+          } else {
+            details.removeAttribute("open");
+          }
+        }
+        const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+        const fromCls = show ? "hidden" : "unhidden";
+        const toCls = show ? "unhidden" : "hidden";
+        for (let i=0; i<cellCodeDivs.length; i++) {
+          const codeDiv = cellCodeDivs[i];
+          if (codeDiv.classList.contains(fromCls)) {
+            codeDiv.classList.remove(fromCls);
+            codeDiv.classList.add(toCls);
+          } 
+        }
+        return false;
+      }
+    }
+    const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+    if (hideAllCode) {
+      hideAllCode.addEventListener("click", toggleCodeHandler(false));
+    }
+    const showAllCode = window.document.getElementById("quarto-show-all-code");
+    if (showAllCode) {
+      showAllCode.addEventListener("click", toggleCodeHandler(true));
     }
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
       var mailtoRegex = new RegExp(/^mailto:/);
@@ -713,7 +671,40 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       }
     }
   });
-  </script>
+  </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Day 3"</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co">  html:</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co">    code-fold: true</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co">    code-tools: true</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co">    code-block-bg: true</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co">    code-block-border-left: "#31BAE9"</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu"># Day 3 - Analysing multi-sample scRNAseq data in Seurat</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="fu">## Recap from Day 2</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>How to load cellranger data in RStudio.</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>How to process scRNAseq data in Seurat.</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Loading and creating seurat object</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Generating QC metrics</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Filtering data</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Normalising data</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Identifying highly variable genes</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Scaling data</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Performing Principal Component Analysis</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Finding clusters (Clustering)</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Visualising clusters using UMAP</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Other visualisation functions to create plots for identifying differences in gene expression between clusters.</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Today we will cover:</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Integrating single-cell datasets.</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Differential Gene Expression analysis and marker selection.</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Cell-type annotation</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+</div></div></div></div></div>
 </div> <!-- /content -->
 
 

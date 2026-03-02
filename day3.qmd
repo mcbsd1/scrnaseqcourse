@@ -1,0 +1,32 @@
+---
+title: "Day 3"
+format:
+  html:
+    code-fold: true
+    code-tools: true
+    code-block-bg: true
+    code-block-border-left: "#31BAE9"
+---
+
+# Day 3 - Analysing multi-sample scRNAseq data in Seurat
+
+## Recap from Day 2
+
+- How to load cellranger data in RStudio.
+- How to process scRNAseq data in Seurat.
+  - Loading and creating seurat object
+  - Generating QC metrics
+  - Filtering data
+  - Normalising data
+  - Identifying highly variable genes
+  - Scaling data
+  - Performing Principal Component Analysis
+  - Finding clusters (Clustering)
+  - Visualising clusters using UMAP
+  - Other visualisation functions to create plots for identifying differences in gene expression between clusters.
+  
+- Today we will cover:
+  - Integrating single-cell datasets.
+  - Differential Gene Expression analysis and marker selection.
+  - Cell-type annotation
+  - 
