@@ -14,4 +14,174 @@ format:
   - Integrating single-cell datasets.
   - Differential Gene Expression analysis and marker selection.
   - Cell-type annotation
-  - 
+
+## Experiment
+
+- Cancer NSCLC processed sequencing data have been taken from GEO database (GSE117570).
+- 4 early‐stage non‐small cell lung cancer (NSCLC) patients.
+- The Cell Ranger Single Cell Software Suite v.2.0.1 was used to perform sample de‐multiplexing, alignment, filtering, and UMI counting.
+- Paper reference: [Qianqian et al. Cancer Medicine. 2019](https://pmc.ncbi.nlm.nih.gov/articles/PMC6558497/)
+- <u>Input files:</u>
+  - Patient 1 - Normal
+    - GSM3304008_P1_Normal_processed_data.txt
+  - Patient 1 - Tumor
+    - GSM3304007_P1_Tumor_processed_data.txt
+  - Patient 2 - Normal
+    - GSM3304010_P2_Normal_processed_data.txt
+  - Patient 2 - Tumor
+    - GSM3304009_P2_Tumor_processed_data.txt
+  - Patient 3 - Normal
+    - GSM3304012_P3_Normal_processed_data.txt
+  - Patient 3 - Tumor
+    - GSM3304011_P3_Tumor_processed_data.txt
+  - Patient 4 - Normal
+    - GSM3304014_P4_Normal_processed_data.txt
+  - Patient 4 - Tumor
+    - GSM3304013_P4_Tumor_processed_data.txt
+    
+## Setup and QC
+
+- Create a script called "**NSCLC_dataset.Rmd**" by following the instructions as instructed on **Day-2**.
+
+- Set the working directory to the bin folder where the script named "NSCLC_dataset.Rmd" will be stored.
+Setting up working directory:
+
+```r
+setwd(/path/to/your/bin)
+```
+
+Load libraries:
+
+```r
+library(Seurat)
+library(DoubletFinder)
+```
+
+Load all the datasets:
+
+```r
+# Loading P1 Tumor processed data
+
+data <- read.table("input/GSM3304007_P1_Tumor_processed_data.txt",row.names = 1,header = T)
+data1 <- data[-1]
+p1tumor <- CreateSeuratObject(counts = data1, project = "GSM3304007")
+
+# Loading P1 Normal processed data
+
+data <- read.table("input/GSM3304008_P1_Normal_processed_data.txt",row.names = 1,header = T)
+data1 <- data[-1]
+p1normal <- CreateSeuratObject(counts = data1, project = "GSM3304008")
+
+# Loading P2 Tumor processed data
+
+data <- read.table("input/GSM3304009_P2_Tumor_processed_data.txt",row.names = 1,header = T)
+data1 <- data[-1]
+p2tumor <- CreateSeuratObject(counts = data1, project = "GSM3304009")
+
+# Loading P2 Normal processed data
+
+data <- read.table("input/GSM3304010_P2_Normal_processed_data.txt",row.names = 1,header = T)
+data1 <- data[-1]
+p2normal <- CreateSeuratObject(counts = data1, project = "GSM3304010")
+
+# Loading P3 Tumor processed data
+
+data <- read.table("input/GSM3304011_P3_Tumor_processed_data.txt",row.names = 1,header = T)
+data1 <- data[-1]
+p3tumor <- CreateSeuratObject(counts = data1, project = "GSM3304011")
+
+# Loading P3 Normal processed data
+
+data <- read.table("input/GSM3304012_P3_Normal_processed_data.txt",row.names = 1,header = T)
+data1 <- data[-1]
+p3normal <- CreateSeuratObject(counts = data1, project = "GSM3304012")
+
+# Loading P4 Tumor processed data
+
+data <- read.table("input/GSM3304013_P4_Tumor_processed_data.txt",row.names = 1,header = T)
+data1 <- data[-1]
+p4tumor <- CreateSeuratObject(counts = data1, project = "GSM3304013")
+
+# Loading P4 Normal processed data
+
+data <- read.table("input/GSM3304014_P4_Normal_processed_data.txt",row.names = 1,header = T)
+data1 <- data[-1]
+p4normal <- CreateSeuratObject(counts = data1, project = "GSM3304014")
+```
+
+Add percentage of reads that map to mitochondrial genome
+
+```r
+p1tumor[["percent.mt"]] <- PercentageFeatureSet(p1tumor, pattern = "^MT-")
+p1normal[["percent.mt"]] <- PercentageFeatureSet(p1normal, pattern = "^MT-")
+p2tumor[["percent.mt"]] <- PercentageFeatureSet(p2tumor, pattern = "^MT-")
+p2normal[["percent.mt"]] <- PercentageFeatureSet(p2normal, pattern = "^MT-")
+p3tumor[["percent.mt"]] <- PercentageFeatureSet(p3tumor, pattern = "^MT-")
+p3normal[["percent.mt"]] <- PercentageFeatureSet(p3normal, pattern = "^MT-")
+p4tumor[["percent.mt"]] <- PercentageFeatureSet(p4tumor, pattern = "^MT-")
+p4normal[["percent.mt"]] <- PercentageFeatureSet(p4normal, pattern = "^MT-")
+```
+
+Visualise QC metrics as violin plots
+
+```r
+VlnPlot(p1tumor, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3)
+VlnPlot(p1normal, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3)
+VlnPlot(p2tumor, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3)
+VlnPlot(p2normal, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3)
+VlnPlot(p3tumor, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3)
+VlnPlot(p3normal, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3)
+VlnPlot(p4tumor, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3)
+VlnPlot(p4normal, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3)
+```
+
+Now, filter cells. The first one has been done for you.
+
+```r
+p1tumorFilteredObj <- subset(p1tumor, subset = nFeature_RNA > 200 & nFeature_RNA < 4000 &  percent.mt < 10)
+```
+
+## Normalization, Scaling and Dimensional Reduction
+
+Once the samples are filtered, then run the following steps for each sample in the iteration:
+
+```r
+# Define the sample names
+samples <- c("p1tumor", "p1normal", "p2tumor", "p2normal", "p3tumor", "p3normal", "p4tumor", "p4normal")
+
+# Loop through each sample
+for (sample in samples) {
+  
+  # Get the original Seurat object dynamically
+  seurat_obj <- get(paste0(sample, "FilteredObj"))
+  
+  normalized_obj <- NormalizeData(object = seurat_obj, normalization.method = "LogNormalize", scale.factor = 10000)
+  
+  normalized2_obj <- FindVariableFeatures(normalized_obj, selection.method = "vst", nfeatures = 2000)
+  
+  all_genes <- rownames(normalized2_obj)
+  scaled_obj <- ScaleData(object = normalized2_obj, features = all_genes)
+  
+  scaled2_obj <- RunPCA(object = scaled_obj, features = VariableFeatures(object = scaled_obj), 
+                        ndims.print = 1:5, nfeatures.print = 5)
+  
+  ElbowPlot(scaled2_obj, ndims = 50)
+  
+  neighbors_obj <- FindNeighbors(scaled2_obj, reduction = "pca", dims = 1:25, k.param = 30)
+  
+  clusters_obj <- FindClusters(object = neighbors_obj)
+  
+  umap_obj <- RunUMAP(clusters_obj, reduction = "pca", dims = 1:25, n.neighbors = 30L, min.dist = 0.3, seed.use = 123456L)
+  
+  # Store results dynamically in the environment
+  assign(paste0(sample, "NormalisedObj"), normalized_obj)
+  assign(paste0(sample, "Normalised2Obj"), normalized2_obj)
+  assign(paste0(sample, "ScaledObj"), scaled_obj)
+  assign(paste0(sample, "Scaled2Obj"), scaled2_obj)
+  assign(paste0(sample, "FindNeighbors"), neighbors_obj)
+  assign(paste0(sample, "FindClusters"), clusters_obj)
+  assign(paste0(sample, "UMAP"), umap_obj)
+}
+```
+
+The results for each sample will be stored in its corresponding sample name + UMAP. For example, if you would like to access the object for p3tumor, the results is stored in p3tumorUMAP. For p4normal, the object is p4normalUMAP, and so on.
